@@ -1,11 +1,11 @@
-package models;
+package controllers;
 
-import controllers.GamePanelController;
+import config.db.Config;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
@@ -22,7 +22,8 @@ public class GameFrame extends JFrame implements WindowListener {
         this.addWindowListener(this);
         this.pack();
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screenSize = Config.deviceScreenSize;
+
         this.setLocation((screenSize.width - gamePanelController.getScreenWidth()) / 2,
                 (screenSize.height - gamePanelController.getScreenHeight()) / 2);
         this.setVisible(true);

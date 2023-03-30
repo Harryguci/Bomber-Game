@@ -4,6 +4,7 @@ import models.AbleMoveEntity;
 import models.BackgroundType;
 import models.Entity;
 import models.bomb.Bomb;
+import models.bomb.Explosion;
 import models.gui.GButton;
 import models.gui.GString;
 import models.mainObject.MainObject;
@@ -13,7 +14,13 @@ import util.ImageReader;
 import models.tiles.TileKind;
 
 import javax.swing.JPanel;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
@@ -37,14 +44,14 @@ public class GamePanelController extends JPanel implements Runnable {
     private final byte FPS = 60;
     private final int originalTitleSize = 16;
     private int scale = 3;
-    public int titleSize = scale * originalTitleSize;
+    public int tileSize = scale * originalTitleSize;
     private final int maxScreenCol = 20;
     private final int maxScreenRow = 10;
-    public int screenWidth = titleSize * maxScreenCol;
-    public int screenHeight = titleSize * maxScreenRow;
+    public int screenWidth = tileSize * maxScreenCol;
+    public int screenHeight = tileSize * maxScreenRow;
     private String _language = "ENG";
 
-    private int viewportWidth = titleSize * 104; // viewport width default set 104 columns
+    private int viewportWidth = tileSize * 104; // viewport width default set 104 columns
     private int viewportHeight = screenHeight; // viewport height default set equals the window's height.
 
     private int xOffset = 0;    // x offset
@@ -98,7 +105,7 @@ public class GamePanelController extends JPanel implements Runnable {
         addMouseListener(mouseInputController);
 
         player1 = new MainObject(this, keyInputController);
-        player1.setLocation(titleSize, titleSize);
+        player1.setLocation(tileSize, tileSize);
 
         initButton();
 
@@ -145,7 +152,6 @@ public class GamePanelController extends JPanel implements Runnable {
         GButton tutorialBtn = new GButton("TUTORIAL", (screenWidth - w) / 2, screenHeight / 3 + (int) (h * 1.3), w, h, this, mouseInputController);
 
         // add some buttons in here
-
         playBtn.setFont(customFont);
         tutorialBtn.setFont(customFont);
         buttonMap.put(playBtn.getName(), playBtn);
@@ -153,16 +159,16 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void initScreen() {
-        titleSize = scale * originalTitleSize;
-        screenWidth = titleSize * maxScreenCol;
-        screenHeight = titleSize * maxScreenRow;
+        tileSize = scale * originalTitleSize;
+        screenWidth = tileSize * maxScreenCol;
+        screenHeight = tileSize * maxScreenRow;
         setPreferredSize(new Dimension(screenWidth, screenHeight));
     }
 
     public void createOneZombie(int cl, int r) {
         while (_titleMapStr[r].charAt(cl) != '0') cl++;
-        int zombieX = cl * titleSize;
-        int zombieY = r * titleSize;
+        int zombieX = cl * tileSize;
+        int zombieY = r * tileSize;
         _entities.add(new Zombie(zombieX, zombieY, this, keyInputController));
     }
 
@@ -225,8 +231,8 @@ public class GamePanelController extends JPanel implements Runnable {
         }
         if (e == null) return null;
         e.setGamePanel(this);
-        e.setSize(titleSize, titleSize);
-        e.setLocation(cl * titleSize, r * titleSize);
+        e.setSize(tileSize, tileSize);
+        e.setLocation(cl * tileSize, r * tileSize);
         _entities.add(e);
 
         return e;
@@ -234,7 +240,7 @@ public class GamePanelController extends JPanel implements Runnable {
 
     public boolean[][] setupMap(String mapName) {
 
-        _tileMap = new boolean[viewportHeight / titleSize][viewportWidth / titleSize];
+        _tileMap = new boolean[viewportHeight / tileSize][viewportWidth / tileSize];
         try {
             int r = 0;
 
@@ -247,7 +253,7 @@ public class GamePanelController extends JPanel implements Runnable {
                 String data = myReader.nextLine();
                 _titleMapStr[r] = data;
 
-                for (int i = 0; i < viewportWidth / titleSize; i++) {
+                for (int i = 0; i < viewportWidth / tileSize; i++) {
                     char t = data.charAt(i);
 
                     if (t == '1')
@@ -404,9 +410,11 @@ public class GamePanelController extends JPanel implements Runnable {
             } else if (e instanceof AbleMoveEntity && !((AbleMoveEntity) e).isAlive()) {
                 if (e instanceof Zombie) numberScores += 10;
                 _entities.remove(i);
-
                 i--;
             } else if (e instanceof LowTile16bit && !((LowTile16bit) e).getAlive()) {
+                _entities.remove(i);
+                i--;
+            } else if (e instanceof Explosion && !(((Explosion) e).getAlive())) {
                 _entities.remove(i);
                 i--;
             }
@@ -452,7 +460,7 @@ public class GamePanelController extends JPanel implements Runnable {
         for (int r = 0; r < maxScreenRow; r++) {
             for (int cl = 0; cl < maxScreenCol; cl++) {
                 g2d.setColor(new Color(0, 0, 0, 50));
-                g2d.drawRect(cl * titleSize, r * titleSize, titleSize, titleSize);
+                g2d.drawRect(cl * tileSize, r * tileSize, tileSize, tileSize);
             }
         }
     }
@@ -481,20 +489,20 @@ public class GamePanelController extends JPanel implements Runnable {
 
     public void paintBackground(Graphics2D g2d) {
 
-        int maxRow = viewportHeight / titleSize;
-        int maxCol = viewportWidth / titleSize;
+        int maxRow = viewportHeight / tileSize;
+        int maxCol = viewportWidth / tileSize;
 
         g2d.setColor(_backgroundColor);
 
         for (int r = 0; r < maxRow; r++) {
-            for (int cl = xOffset / titleSize - 1; cl <= Math.min(xOffset / titleSize + maxScreenCol + 1, maxCol - 1); cl++) {
+            for (int cl = xOffset / tileSize - 1; cl <= Math.min(xOffset / tileSize + maxScreenCol + 1, maxCol - 1); cl++) {
                 int d = (r + cl);
                 if (d % 5 == 0)
-                    g2d.drawImage(backgroundImage.get(BackgroundType.GROUND_03.ordinal()), cl * titleSize - xOffset, r * titleSize - yOffset, titleSize, titleSize, this);
+                    g2d.drawImage(backgroundImage.get(BackgroundType.GROUND_03.ordinal()), cl * tileSize - xOffset, r * tileSize - yOffset, tileSize, tileSize, this);
                 else if (d % 7 > 4)
-                    g2d.drawImage(backgroundImage.get(BackgroundType.GROUND_02.ordinal()), cl * titleSize - xOffset, r * titleSize - yOffset, titleSize, titleSize, this);
+                    g2d.drawImage(backgroundImage.get(BackgroundType.GROUND_02.ordinal()), cl * tileSize - xOffset, r * tileSize - yOffset, tileSize, tileSize, this);
                 else
-                    g2d.drawImage(backgroundImage.get(BackgroundType.GROUND_01.ordinal()), cl * titleSize - xOffset, r * titleSize - yOffset, titleSize, titleSize, this);
+                    g2d.drawImage(backgroundImage.get(BackgroundType.GROUND_01.ordinal()), cl * tileSize - xOffset, r * tileSize - yOffset, tileSize, tileSize, this);
             }
         }
 //        paintGrid(g2d);
@@ -502,25 +510,25 @@ public class GamePanelController extends JPanel implements Runnable {
 
 
     public void paintMap(Graphics2D g2d) {
-        int maxCol = viewportWidth / titleSize;
-        int maxRow = viewportHeight / titleSize;
+        int maxCol = viewportWidth / tileSize;
+        int maxRow = viewportHeight / tileSize;
 
         for (int r = 0; r < maxRow; r++) {
             for (int cl = 0; cl < maxCol; cl++) {
-                if (cl > 1 && (cl + 1) * titleSize < xOffset || (cl - 1) * titleSize - xOffset > screenWidth) continue;
+                if (cl > 1 && (cl + 1) * tileSize < xOffset || (cl - 1) * tileSize - xOffset > screenWidth) continue;
 
                 try {
                     if (_titleMapStr[r].charAt(cl) == '1') {
                         g2d.setColor(_objectColor);
                         if (tiles.size() == 0 || tiles.get(TileKind.WALL_01.ordinal()) == null)
-                            g2d.fillRect(cl * titleSize - xOffset, r * titleSize, titleSize, titleSize);
+                            g2d.fillRect(cl * tileSize - xOffset, r * tileSize, tileSize, tileSize);
                         else {
                             if ((cl + r) % 5 == 0)
-                                g2d.drawImage(LowTile16bit.WALL_02.getImage(), cl * titleSize - xOffset, r * titleSize - yOffset, titleSize, titleSize, this);
+                                g2d.drawImage(LowTile16bit.WALL_02.getImage(), cl * tileSize - xOffset, r * tileSize - yOffset, tileSize, tileSize, this);
                             else if ((cl + r) % 3 == 0)
-                                g2d.drawImage(LowTile16bit.WALL_03.getImage(), cl * titleSize - xOffset, r * titleSize - yOffset, titleSize, titleSize, this);
+                                g2d.drawImage(LowTile16bit.WALL_03.getImage(), cl * tileSize - xOffset, r * tileSize - yOffset, tileSize, tileSize, this);
                             else
-                                g2d.drawImage(LowTile16bit.WALL_01.getImage(), cl * titleSize - xOffset, r * titleSize - yOffset, titleSize, titleSize, this);
+                                g2d.drawImage(LowTile16bit.WALL_01.getImage(), cl * tileSize - xOffset, r * tileSize - yOffset, tileSize, tileSize, this);
                         }
                     }
                 } catch (StringIndexOutOfBoundsException e) {
@@ -533,23 +541,23 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void paintDarkMap(Graphics2D g2d) {
-        int maxCol = viewportWidth / titleSize;
-        int maxRow = viewportHeight / titleSize;
+        int maxCol = viewportWidth / tileSize;
+        int maxRow = viewportHeight / tileSize;
 
         // Map tat den
         int d = 4;
         for (int r = 0; r < maxRow * d; r++) {
             for (int cl = 0; cl < maxCol * d; cl++) {
 
-                if (cl > 1 && (cl + 1) * titleSize / 4 < xOffset || (cl - 1) * titleSize / 4 - xOffset > screenWidth)
+                if (cl > 1 && (cl + 1) * tileSize / 4 < xOffset || (cl - 1) * tileSize / 4 - xOffset > screenWidth)
                     continue;
 
-                if (Math.abs(cl * titleSize / d - player1.getX()) <= titleSize * 2
-                        && Math.abs(r * titleSize / d - player1.getY()) <= titleSize * 2)
+                if (Math.abs(cl * tileSize / d - player1.getX()) <= tileSize * 2
+                        && Math.abs(r * tileSize / d - player1.getY()) <= tileSize * 2)
                     continue;
 
                 g2d.setColor(Color.BLACK);
-                g2d.fillRect(cl * titleSize / d - xOffset, r * titleSize / d, titleSize / d, titleSize / d);
+                g2d.fillRect(cl * tileSize / d - xOffset, r * tileSize / d, tileSize / d, tileSize / d);
             }
         }
     }
@@ -624,6 +632,15 @@ public class GamePanelController extends JPanel implements Runnable {
 
     // [GETTER & SETTER]
 
+    public boolean detectHardTile(int cl, int r) {
+        try {
+            if (this._tileMap[r][cl])
+                return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return false;
+        }
+        return false;
+    }
     public boolean detectTitle(int cl, int r) {
         try {
             if (this._tileMap[r][cl])
@@ -635,7 +652,7 @@ public class GamePanelController extends JPanel implements Runnable {
         for (Entity e : _entities)
             if (e instanceof LowTile16bit
                     && isCollision(new Rectangle(e.getX(), e.getY(), e.getWidth(), e.getHeight()),
-                    new Rectangle(cl * titleSize, r * titleSize, titleSize, titleSize)))
+                    new Rectangle(cl * tileSize, r * tileSize, tileSize, tileSize)))
                 return true;
 
         return false;
@@ -652,9 +669,7 @@ public class GamePanelController extends JPanel implements Runnable {
     public Entity detectEntity(Rectangle rect1) {
         for (Entity e : _entities) {
             Rectangle rect2 = new Rectangle(e.getX(), e.getY(), e.getWidth(), e.getHeight());
-            if (e instanceof Bomb && ((Bomb) e).getDirection().equals("ACTION") && ((Bomb) e).insideExplore(rect1)) {
-                return e;
-            }
+
             if (GamePanelController.isCollision(rect1, rect2))
                 return e;
         }
@@ -667,9 +682,6 @@ public class GamePanelController extends JPanel implements Runnable {
 
             Rectangle rect2 = new Rectangle(e.getX(), e.getY(), e.getWidth(), e.getHeight());
 
-            if (e instanceof Bomb && ((Bomb) e).getDirection().equals("ACTION") && ((Bomb) e).insideExplore(rect1)) {
-                return e;
-            }
             if (GamePanelController.isCollision(rect1, rect2))
                 return e;
         }
@@ -685,6 +697,16 @@ public class GamePanelController extends JPanel implements Runnable {
     // Add an entity
     public void addEntity(Entity entity) {
         _entities.add(entity);
+    }
+    public boolean addExplosion(Explosion e) {
+        int cl = e.getX() / tileSize;
+        int r = e.getY() / tileSize;
+
+        if (cl < 0 || r < 0 || cl >= viewportWidth / tileSize || r >= viewportHeight / tileSize) return false;
+        if (detectHardTile(cl, r)) return false;
+        System.out.println("ADD Explosion");
+        _entities.add(e);
+        return true;
     }
 
     // Get entity at (x, y)

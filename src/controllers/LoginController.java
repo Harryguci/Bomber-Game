@@ -21,10 +21,10 @@ public class LoginController {
             this.password = user.getPassword();
             System.out.println("Login Successfully: Welcome " + user.getUsername());
 
-            JOptionPane.showMessageDialog(null, "Login Successfully: Welcome " + user.getUsername());
+            JOptionPane.showMessageDialog(loginFrame, "Login Successfully: Welcome " + user.getUsername());
             isLogin = true;
         } else
-            JOptionPane.showMessageDialog(null, "Login Failed");
+            JOptionPane.showMessageDialog(loginFrame, "Login Failed");
 
     }
 

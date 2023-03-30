@@ -3,12 +3,16 @@ package models.threat;
 import models.AbleMoveEntity;
 import models.Entity;
 import models.bomb.Bomb;
+import models.bomb.Explosion;
 import views.Renderer;
 import models.gui.Sprite;
 import controllers.GamePanelController;
 import controllers.KeyInputController;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 public class Zombie extends AbleMoveEntity {
     private Renderer renderer = Sprite.ZOMBIE_01;
@@ -21,7 +25,7 @@ public class Zombie extends AbleMoveEntity {
         super(gamePanelController, keyInputController);
         _x = x;
         _y = y;
-        _width = _height = gamePanelController.titleSize;
+        _width = _height = gamePanelController.tileSize;
         direction = Direction.LEFT;
         setSpeed(2, 2);
         renderer.setScale(0.18);
@@ -148,13 +152,13 @@ public class Zombie extends AbleMoveEntity {
     }
 
     public void handleBombed() {
-        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.titleSize + 20) / 2,
-                _y + (_height - gamePanelController.titleSize + 20) / 2,
-                gamePanelController.titleSize - 20, gamePanelController.titleSize - 20);
+        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.tileSize + 20) / 2,
+                _y + (_height - gamePanelController.tileSize + 20) / 2,
+                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
         Entity e = gamePanelController.detectEntity(rect, this);
 
-        if (e instanceof Bomb && ((Bomb) e).getDirection() == "ACTION") {
+        if (e instanceof Explosion) {
             if (hurtDelay <= 0) {
                 _heart--;
                 hurtDelay = 30;

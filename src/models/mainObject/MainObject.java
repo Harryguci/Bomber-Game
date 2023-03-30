@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import models.AbleMoveEntity;
 import models.Entity;
 import models.bomb.Bomb;
+import models.bomb.Explosion;
 import views.Renderer;
 import models.gui.Sprite;
 import models.threat.Zombie;
@@ -21,7 +22,7 @@ public class MainObject extends AbleMoveEntity {
     private int _heart = 3;
     private int delay = 0, hurtDelay = 20, delayAfterPutBomb = 30;
     private int _numberOfBomb = 1;
-    private int groundY = gamePanelController.screenHeight - gamePanelController.titleSize * 4;
+    private int groundY = gamePanelController.screenHeight - gamePanelController.tileSize * 4;
     private Renderer _render;
     private Color _color = new Color(20, 20, 100);
 
@@ -31,13 +32,13 @@ public class MainObject extends AbleMoveEntity {
         _speedX = 3; // Can only up and down
         _speedY = 3;
 
-        _y = 3 * gamePanelController.titleSize;
-        _x = 2 * gamePanelController.titleSize;
+        _y = 3 * gamePanelController.tileSize;
+        _x = 2 * gamePanelController.tileSize;
 
-        _width = _height = gamePanelController.titleSize;
+        _width = _height = gamePanelController.tileSize;
 
         _render = Sprite.PLAYER_01;
-        double sc = gamePanelController.titleSize * 1.0 / 120;
+        double sc = gamePanelController.tileSize * 1.0 / 120;
         _render.setScale(sc);
     }
 
@@ -60,9 +61,9 @@ public class MainObject extends AbleMoveEntity {
 
     @Override
     public void move() {
-        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.titleSize + 20) / 2,
-                _y + (_height - gamePanelController.titleSize + 20) / 2,
-                gamePanelController.titleSize - 20, gamePanelController.titleSize - 20);
+        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.tileSize + 20) / 2,
+                _y + (_height - gamePanelController.tileSize + 20) / 2,
+                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
         Entity e = gamePanelController.detectEntity(rect);
 
@@ -144,8 +145,8 @@ public class MainObject extends AbleMoveEntity {
 
     public void putBomb() {
         if (keyInputController.isPressed("space") && _numberOfBomb > 0 && delay <= 0) {
-            int bombX = (int) (_x + gamePanelController.titleSize / 2) / gamePanelController.titleSize * gamePanelController.titleSize;
-            int bombY = (int) (_y + gamePanelController.titleSize / 2) / gamePanelController.titleSize * gamePanelController.titleSize;
+            int bombX = (int) (_x + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
+            int bombY = (int) (_y + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
 
             gamePanelController.addEntity(new Bomb(bombX, bombY, _width, _height, gamePanelController));
             keyInputController.setReleased(KeyEvent.VK_SPACE);
@@ -158,21 +159,22 @@ public class MainObject extends AbleMoveEntity {
     }
 
     public void updateCollideRect() {
-        setCollideRect(new Rectangle(_x - gamePanelController.getXOffset() + (_width - gamePanelController.titleSize + 20) / 2,
-                _y - gamePanelController.getYOffset() + (_height - gamePanelController.titleSize + 20) / 2,
-                gamePanelController.titleSize - 20, gamePanelController.titleSize - 20));
+        setCollideRect(new Rectangle(_x - gamePanelController.getXOffset() + (_width - gamePanelController.tileSize + 20) / 2,
+                _y - gamePanelController.getYOffset() + (_height - gamePanelController.tileSize + 20) / 2,
+                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20));
     }
 
     public void setNumberOfBomb(int n) {
         this._numberOfBomb = n;
     }
+
     public int get_numberOfBomb() {
         return _numberOfBomb;
     }
 
     public void setDefault() {
         direction = Direction.DEFAULT;
-        _x = _y = _width = _height = gamePanelController.titleSize;
+        _x = _y = _width = _height = gamePanelController.tileSize;
         _color = new Color(20, 20, 100);
         _numberOfBomb = 1;
     }
@@ -193,9 +195,9 @@ public class MainObject extends AbleMoveEntity {
     public boolean isDied() {
         if (direction == Direction.DIED) return true;
 
-        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.titleSize + 20) / 2,
-                _y + (_height - gamePanelController.titleSize + 20) / 2,
-                gamePanelController.titleSize - 20, gamePanelController.titleSize - 20);
+        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.tileSize + 20) / 2,
+                _y + (_height - gamePanelController.tileSize + 20) / 2,
+                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
         Entity e = gamePanelController.detectEntity(rect);
 
@@ -203,12 +205,9 @@ public class MainObject extends AbleMoveEntity {
 
         if (
                 hurtDelay <= 0
-                        && ((e instanceof Bomb && ((Bomb) e).getDirection() == "ACTION")
+                        && ((e instanceof Explosion)
                         || (e instanceof Zombie && ((Zombie) e).getDirection() != "DIED"))
         ) {
-            if (e instanceof Bomb)
-                ((Bomb) e).setDirection("DONE");
-
             _heart--;
             _color = new Color(255, 0, 0, 100);
 
@@ -233,13 +232,13 @@ public class MainObject extends AbleMoveEntity {
 
     public boolean canMove(int x, int y) {
 
-        Rectangle rect = new Rectangle(x + (_width - gamePanelController.titleSize + 20) / 2,
-                y + (_height - gamePanelController.titleSize + 20) / 2,
-                gamePanelController.titleSize - 20, gamePanelController.titleSize - 20);
+        Rectangle rect = new Rectangle(x + (_width - gamePanelController.tileSize + 20) / 2,
+                y + (_height - gamePanelController.tileSize + 20) / 2,
+                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
         Entity e = gamePanelController.detectEntity(rect);
 
-        if (e instanceof Bomb && !((Bomb) e).isExplore()) {
+        if (e instanceof Bomb && !((Bomb) e).isExplosion()) {
             if (delayAfterPutBomb <= 0)
                 return false;
         }

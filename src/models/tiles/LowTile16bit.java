@@ -3,6 +3,7 @@ package models.tiles;
 import models.Entity;
 import models.Entity16bit;
 import models.bomb.Bomb;
+import models.bomb.Explosion;
 import views.RenderPixel;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -39,10 +40,10 @@ public class LowTile16bit extends Entity16bit {
         }
     }
     public void handleBombed() {
-        Rectangle rect = new Rectangle(_x, _y, gamePanelController.titleSize, gamePanelController.titleSize);
+        Rectangle rect = new Rectangle(_x, _y, gamePanelController.tileSize, gamePanelController.tileSize);
 
         Entity e = gamePanelController.detectEntity(rect, this);
-        if (e instanceof Bomb && ((Bomb) e).getDirection() == "ACTION") {
+        if (e instanceof Explosion) {
             _alive = false;
         }
     }

@@ -23,7 +23,7 @@ public class LowTile extends Entity {
         this.spriteX = spriteX;
         this.spriteY = spriteY;
 
-        _width = _height = gamePanelController.titleSize;
+        _width = _height = gamePanelController.tileSize;
     }
 
     public LowTile(int x, int y, LowTileKind type, GamePanelController gamePanelController) {
@@ -48,7 +48,7 @@ public class LowTile extends Entity {
             }
         }
 
-        _width = _height = gamePanelController.titleSize;
+        _width = _height = gamePanelController.tileSize;
         double s = _width / 16;
         render.setScale(s);
     }

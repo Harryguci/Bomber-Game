@@ -1,5 +1,6 @@
 package views;
 
+import config.db.Config;
 import controllers.LoginController;
 
 import javax.swing.BorderFactory;
@@ -15,7 +16,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -48,6 +48,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 
         usernameLabel.setFont(new Font("Roboto", Font.PLAIN, 16));
         passwordLabel.setFont(new Font("Roboto", Font.PLAIN, 16));
+
         usernameLabel.setForeground(textColor);
         passwordLabel.setForeground(textColor);
 
@@ -114,12 +115,10 @@ public class LoginFrame extends JFrame implements ActionListener {
         loginButton.addActionListener(this);
         cancelButton.addActionListener(e -> dispose());
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension screenSize = Config.deviceScreenSize;
         setLocation(new Point((screenSize.width - width) / 2, (screenSize.height - height) / 2));
         setResizable(false);
-
         getContentPane().setBackground(backgroundColor); // set background color here
-
         // Display the frame
         setVisible(true);
     }
@@ -128,6 +127,7 @@ public class LoginFrame extends JFrame implements ActionListener {
         if (e.getSource() == loginButton) {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
+
             // Do login validation here
             // For example, you could compare the entered username and password with a database of valid credentials
             // If the login is successful, you could open a new window or do other actions

@@ -1,5 +1,5 @@
 import controllers.LoginController;
-import models.GameFrame;
+import controllers.GameFrame;
 
 public class Main implements Runnable {
     private Thread loginThread;

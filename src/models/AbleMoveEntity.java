@@ -65,14 +65,14 @@ public abstract class AbleMoveEntity extends Entity {
     public abstract void move();
 
     public boolean canMove(int x, int y) {
-        Rectangle rect = new Rectangle(x + (_width - gamePanelController.titleSize + 20) / 2,
-                y + (_height - gamePanelController.titleSize + 20) / 2,
-                gamePanelController.titleSize - 20, gamePanelController.titleSize - 20);
+        Rectangle rect = new Rectangle(x + (_width - gamePanelController.tileSize + 20) / 2,
+                y + (_height - gamePanelController.tileSize + 20) / 2,
+                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
-        return !gamePanelController.detectTitle(rect.x / gamePanelController.titleSize, rect.y / gamePanelController.titleSize)
-                && !gamePanelController.detectTitle((rect.x + rect.width) / gamePanelController.titleSize, rect.y / gamePanelController.titleSize)
-                && !gamePanelController.detectTitle(rect.x / gamePanelController.titleSize, (rect.y + rect.height) / gamePanelController.titleSize)
-                && !gamePanelController.detectTitle((rect.x + rect.width) / gamePanelController.titleSize, (rect.y + rect.height) / gamePanelController.titleSize);
+        return !gamePanelController.detectTitle(rect.x / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
+                && !gamePanelController.detectTitle((rect.x + rect.width) / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
+                && !gamePanelController.detectTitle(rect.x / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize)
+                && !gamePanelController.detectTitle((rect.x + rect.width) / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize);
     }
 
     @Override
