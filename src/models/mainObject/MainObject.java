@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 
 import models.AbleMoveEntity;
 import models.Entity;
@@ -22,8 +21,7 @@ public class MainObject extends AbleMoveEntity {
     private int _heart = 3;
     private int delay = 0, hurtDelay = 20, delayAfterPutBomb = 30;
     private int _numberOfBomb = 1;
-    private int groundY = gamePanelController.screenHeight - gamePanelController.tileSize * 4;
-    private Renderer _render;
+    private final Renderer _render;
     private Color _color = new Color(20, 20, 100);
 
     public MainObject(GamePanelController gamePanelController, KeyInputController keyInputController) {
@@ -37,15 +35,13 @@ public class MainObject extends AbleMoveEntity {
 
         _width = _height = gamePanelController.tileSize;
 
+        float sc = (float)(gamePanelController.tileSize * 1.0 / 120);
         _render = Sprite.PLAYER_01;
-        double sc = gamePanelController.tileSize * 1.0 / 120;
         _render.setScale(sc);
     }
 
     public void setImage(String path) {
-        BufferedImage img = ImageReader.Read(path);
-
-        super.setImage(img);
+        super.setImage(ImageReader.Read(path));
     }
 
     public void handleMove() {
@@ -67,33 +63,30 @@ public class MainObject extends AbleMoveEntity {
 
         Entity e = gamePanelController.detectEntity(rect);
 
-        if (e instanceof Bomb && ((Bomb) e).getDirection() != "ACTION")
+        if (e instanceof Bomb && !((Bomb) e).getDirection().equals("ACTION"))
             while (delayAfterPutBomb < 6) delayAfterPutBomb++;
 
-        isMove = false;
+        isMove = true;
         if (keyInputController.isPressed("up")) {
             if (canMove(_x, _y - _speedY)) {
-                _y -= _speedY;
-                isMove = true;
+                _y -= _speedY;  // Don't must change player's direction
             }
         } else if (keyInputController.isPressed("down")) {
             if (canMove(_x, _y + _speedY)) {
-                _y += _speedY;
-                isMove = true;
+                _y += _speedY; // Don't must change player's direction
             }
         } else if (keyInputController.isPressed("left")) {
             if (canMove(_x - _speedX, _y)) {
                 _x -= _speedX;
                 direction = Direction.LEFT;
-                isMove = true;
             }
         } else if (keyInputController.isPressed("right")) {
             if (canMove(_x + _speedX, _y)) {
                 _x += _speedX;
                 direction = Direction.RIGHT;
-                isMove = true;
             }
-        }
+        } else
+            isMove = false; // the player is not moving
     }
 
 
@@ -136,7 +129,6 @@ public class MainObject extends AbleMoveEntity {
             super.animate();
             putBomb();
             delayAfterPutBomb--;
-//            System.out.println(delayAfterPutBomb);
             if (delayAfterPutBomb < -9000) delayAfterPutBomb = -1;
         } else {
             // do nothing
@@ -145,8 +137,8 @@ public class MainObject extends AbleMoveEntity {
 
     public void putBomb() {
         if (keyInputController.isPressed("space") && _numberOfBomb > 0 && delay <= 0) {
-            int bombX = (int) (_x + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
-            int bombY = (int) (_y + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
+            int bombX = (_x + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
+            int bombY = (_y + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
 
             gamePanelController.addEntity(new Bomb(bombX, bombY, _width, _height, gamePanelController));
             keyInputController.setReleased(KeyEvent.VK_SPACE);
@@ -183,6 +175,10 @@ public class MainObject extends AbleMoveEntity {
         direction = Direction.DEFAULT;
     }
 
+    public void setAlive(boolean b) {
+        _alive = b;
+    }
+
     public int getNumberOfBomb() {
         return _numberOfBomb;
     }
@@ -190,7 +186,6 @@ public class MainObject extends AbleMoveEntity {
     public boolean isMove() {
         return isMove;
     }
-
 
     public boolean isDied() {
         if (direction == Direction.DIED) return true;
@@ -206,7 +201,7 @@ public class MainObject extends AbleMoveEntity {
         if (
                 hurtDelay <= 0
                         && ((e instanceof Explosion)
-                        || (e instanceof Zombie && ((Zombie) e).getDirection() != "DIED"))
+                        || (e instanceof Zombie && !((Zombie) e).getDirection().equals("DIED")))
         ) {
             _heart--;
             _color = new Color(255, 0, 0, 100);
@@ -252,13 +247,5 @@ public class MainObject extends AbleMoveEntity {
 
     public void setHeart(int h) {
         _heart = h;
-    }
-
-    public int getGroundY() {
-        return groundY;
-    }
-
-    public void setGroundY(int y) {
-        groundY = y;
     }
 }

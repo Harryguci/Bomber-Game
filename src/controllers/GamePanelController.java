@@ -1,5 +1,6 @@
 package controllers;
 
+import config.db.Config;
 import models.AbleMoveEntity;
 import models.BackgroundType;
 import models.Entity;
@@ -7,13 +8,16 @@ import models.bomb.Bomb;
 import models.bomb.Explosion;
 import models.gui.GButton;
 import models.gui.GString;
+import models.gui.GToggleButton;
+import models.gui.Sprite;
 import models.mainObject.MainObject;
 import models.tiles.LowTile16bit;
 import models.threat.Zombie;
 import util.ImageReader;
 import models.tiles.TileKind;
+import views.Renderer;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -59,10 +63,8 @@ public class GamePanelController extends JPanel implements Runnable {
 
     private Thread gameThread;  // main thread
 
-    private Color _objectColor = new Color(50, 50, 50),
-            _backgroundColor = new Color(214, 160, 84),
-            _backgroundColor2 = new Color(250, 160, 84);
-
+    private final Color _objectColor = new Color(50, 50, 50);       // for case can not get images
+    private final Color _backgroundColor = new Color(214, 160, 84); // for case can not get images
     private boolean[][] _tileMap = new boolean[maxScreenRow][30];   // save the location matrix of tiles (walls) as a boolean matrix
     private final String[] _titleMapStr = new String[500];    // save the location matrix of tiles (walls) as a string matrix
     private StatusGame statusGame = StatusGame.START; // current status of game
@@ -70,45 +72,40 @@ public class GamePanelController extends JPanel implements Runnable {
     private final MouseInputController mouseInputController; // manages mouse event
     public MainObject player1; // main player
     private final List<Entity> _entities = new ArrayList<>();
-
     private final List<BufferedImage> tiles = new ArrayList<>();
-    private final List<BufferedImage> backgroundImage = new ArrayList<>();
-    private final Map<String, GButton> buttonMap = new HashMap<>();
-    private final BufferedImage _heartImage = ImageReader.Read("background\\heart1.png");
-    private final BufferedImage menuImage = ImageReader.Read(Path.of("GameUI", "menu_horizontal.png").toString());
-    private final BufferedImage menuImageVertical = ImageReader.Read(Path.of("GameUI", "menu.png").toString());
+    private final List<BufferedImage> backgroundImage = new ArrayList<>();  // store background images
+    private final Map<String, GButton> buttonMap = new HashMap<>(); // store buttons
+    private final Map<String, BufferedImage> guiImages = new HashMap<>();
     private Font customFont;
-    private int _animate = 0, delay = 0, numberScores = 0, gameLevel = 0;
+    private int _animate = 0, delay = 0, numberScores = 0, gameLevel = 0, numberOfThreat = 100;
 
     public GamePanelController() {
-        initScreen();
-        installFont("font\\LilitaOne-Regular.ttf");
-        setBackground(Color.BLACK);
-        setDoubleBuffered(true);
-        // Dependent game level
-        switch (gameLevel) {
-            case 0 -> {
-                setupMap("map3.txt");
-                getTileImage();
-                initBackgroundImage();
-                initZombie("map\\zombieLocation3.txt");
-            }
-            case 1 -> {
-                // This level is not creation
-            }
-        }
+        initScreen();   // init information for game screen
+        installFont(Path.of("font", "LilitaOne-Regular.ttf").toString());   // Get Font
+        initGUIGame(); // init gui images
+        setBackground(Color.BLACK); // background default
+        setDoubleBuffered(true);    // double buffered
 
+        // Set up game objects dependent game level
+        setupMap();
+        getTileImage();
+        initBackgroundImage();
+        initThreat();
+
+        // KEYBOARD & MOUSE
         keyInputController = new KeyInputController(this);
         mouseInputController = new MouseInputController(this);
-
         addKeyListener(keyInputController);
         addMouseListener(mouseInputController);
 
+        // MAIN PLAYER
         player1 = new MainObject(this, keyInputController);
         player1.setLocation(tileSize, tileSize);
 
+        // Init buttons
         initButton();
 
+        // Start main thread
         startThread();
         setFocusable(true);
     }
@@ -118,6 +115,7 @@ public class GamePanelController extends JPanel implements Runnable {
         gameThread.start();
     }
 
+    // Restart game
     public void restart() {
         player1.setDefault();
         statusGame = StatusGame.PLAYING;
@@ -127,72 +125,119 @@ public class GamePanelController extends JPanel implements Runnable {
         numberScores = 0;
         gameLevel = 0;
         setupMap("map3.txt");
-        initZombie("map\\zombieLocation3.txt");
+        initThreat(Path.of("map", "zombieLocation3.txt").toString());
     }
 
+    public void restartAtLevel(int level) {
+        gameLevel = level;
+
+        player1.setDefault();
+        statusGame = StatusGame.PLAYING;
+        _entities.clear();
+        xOffset = yOffset = 0;
+        player1.setHeart(3);
+        numberScores = 0;
+        gameLevel = 0;
+        setupMap();
+        initThreat();
+    }
+
+
+    // Get font from external files.
     public void installFont(String fontName) {
         Path path = FileSystems.getDefault().getPath("").toAbsolutePath();
-        fontName = path + "\\src\\resources\\" + fontName;
-
+        fontName = Path.of(path.toString(), "src", "resources", fontName).toString();
         try {
             customFont = Font.createFont(Font.TRUETYPE_FONT, new File(fontName)).deriveFont(20f);
         } catch (FontFormatException | IOException e) {
             customFont = new Font("Arial", Font.BOLD, 20);
             System.out.println("Can not get font");
         }
-
     }
 
+    // Init buttons
     public void initButton() {
-
-        int w = 120, h = 50;
+        int w = (int) (120 * scale * 1.0) / 3, h = (int) (50 * scale * 1.0 / 3);
         GButton playBtn = new GButton("PLAY", (screenWidth - w) / 2, screenHeight / 3, w, h, this, mouseInputController);
 
-        w = 150;
+        w = (int) (150 * scale * 1.0 / 3);
         GButton tutorialBtn = new GButton("TUTORIAL", (screenWidth - w) / 2, screenHeight / 3 + (int) (h * 1.3), w, h, this, mouseInputController);
+
+        GToggleButton pauseBtn = new GToggleButton("", screenWidth - 80, 20, 50, 50,
+                Sprite.PAUSE_BTN.getSubimage(0, 0), Sprite.PAUSE_BTN.getSubimage(1, 0), this, mouseInputController);
+
+        GButton continueBtn = new GButton("Continue", (screenWidth - w) / 2, screenHeight / 3, w, h, this, mouseInputController);
 
         // add some buttons in here
         playBtn.setFont(customFont);
+        continueBtn.setFont(customFont);
         tutorialBtn.setFont(customFont);
+
         buttonMap.put(playBtn.getName(), playBtn);
         buttonMap.put(tutorialBtn.getName(), tutorialBtn);
+        buttonMap.put("PAUSE_BTN", pauseBtn);
+        buttonMap.put(continueBtn.getName(), continueBtn);
+    }
+
+    public void initGUIGame() {
+        guiImages.put("heartImage", ImageReader.Read("background\\heart1.png"));
+        guiImages.put("menuImage", ImageReader.Read(Path.of("GameUI", "menu_horizontal.png").toString()));
+        guiImages.put("menuImageVertical", ImageReader.Read(Path.of("GameUI", "menu.png").toString()));
+        guiImages.put("backgroundGradient", ImageReader.Read(Path.of("background", "backgroundGradient.png").toString()));
     }
 
     public void initScreen() {
+        int deviceScreenHeight = Config.deviceScreenSize.height;
+
+        scale = Math.min(scale * (int) (deviceScreenHeight / screenHeight), 4);
+        System.out.println(scale);
+
         tileSize = scale * originalTitleSize;
         screenWidth = tileSize * maxScreenCol;
-        screenHeight = tileSize * maxScreenRow;
+        screenHeight = scale * originalTitleSize * maxScreenRow;
+
+        // reset size of the game world
+        viewportWidth = tileSize * 104; // viewport width default set 104 columns
+        viewportHeight = screenHeight; // viewport height default set equals the window's height.
+
         setPreferredSize(new Dimension(screenWidth, screenHeight));
     }
 
-    public void createOneZombie(int cl, int r) {
+    public void createOneThreat(int cl, int r) {
         while (_titleMapStr[r].charAt(cl) != '0') cl++;
         int zombieX = cl * tileSize;
         int zombieY = r * tileSize;
         _entities.add(new Zombie(zombieX, zombieY, this, keyInputController));
     }
 
-    public void initZombie(String filePath) {
+    public void initThreat(String filePath) {
         try {
             Path path = FileSystems.getDefault().getPath("").toAbsolutePath();
-            filePath = path + "\\src\\resources\\" + filePath;
+            filePath = Path.of(path.toString(), "src", "resources", filePath).toString();
             File myObj = new File(filePath);
             Scanner myReader = new Scanner(myObj);
-            int n = Integer.parseInt(myReader.nextLine());
+            numberOfThreat = Integer.parseInt(myReader.nextLine());
 
-            for (int i = 0; i < n; i++) {
-                if (!myReader.hasNext()) break;
+            for (int i = 0; i < numberOfThreat && myReader.hasNext(); i++) {
                 String temp = myReader.nextLine();
                 int r = Integer.parseInt(temp.substring(0, temp.lastIndexOf(' ')).trim());
                 int cl = Integer.parseInt(temp.substring(temp.lastIndexOf(' ')).trim());
 
-                createOneZombie(cl, r);
+                createOneThreat(cl, r);
             }
 
             myReader.close();
 
         } catch (Exception e) {
             System.out.println("Error: Read zombies map file");
+        }
+    }
+
+    public void initThreat() {
+        switch (gameLevel) {
+            case 0 -> initThreat(Path.of("map", "zombieLocation3.txt").toString());
+            case 1 -> initThreat(Path.of("map", "zombieLocation4.txt").toString());
+            default -> System.out.println("ERROR in GamePanel.initZombie()");
         }
     }
 
@@ -217,7 +262,7 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public boolean getTileImage(String fileName) {
-        BufferedImage temp = ImageReader.Read("tiles\\" + fileName); // Tile_11.png
+        BufferedImage temp = ImageReader.Read(Path.of("tiles", fileName).toString());
 
         tiles.add(temp);
 
@@ -238,6 +283,19 @@ public class GamePanelController extends JPanel implements Runnable {
         return e;
     }
 
+    public boolean[][] setupMap() {
+        switch (gameLevel) {
+            case 0 -> {
+                return setupMap("map3.txt");
+            }
+            case 1 -> {
+                return setupMap("map4.txt");
+            }
+            default -> System.out.println("ERROR in GamePanelController.setupMap()");
+        }
+        return null;
+    }
+
     public boolean[][] setupMap(String mapName) {
 
         _tileMap = new boolean[viewportHeight / tileSize][viewportWidth / tileSize];
@@ -245,7 +303,8 @@ public class GamePanelController extends JPanel implements Runnable {
             int r = 0;
 
             Path path = FileSystems.getDefault().getPath("").toAbsolutePath();
-            mapName = path + "\\src\\resources\\map\\" + mapName;
+
+            mapName = Path.of(path.toString(), "src", "resources", "map", mapName).toString();
 
             File myObj = new File(mapName);
             Scanner myReader = new Scanner(myObj);
@@ -253,21 +312,29 @@ public class GamePanelController extends JPanel implements Runnable {
                 String data = myReader.nextLine();
                 _titleMapStr[r] = data;
 
+                FLAG:
                 for (int i = 0; i < viewportWidth / tileSize; i++) {
                     char t = data.charAt(i);
-
-                    if (t == '1')
-                        try {
-                            _tileMap[r][i] = true;
-                        } catch (ArrayIndexOutOfBoundsException e) {
-                            System.out.println("Out of range: tilMap");
-                            break;
+                    switch (t) {
+                        case '1' -> {
+                            try {
+                                _tileMap[r][i] = true;
+                            } catch (ArrayIndexOutOfBoundsException e) {
+                                System.out.println("Out of range: tilMap");
+                                break FLAG;
+                            }
                         }
-                    else if (t == '2') {
-                        if (addLowTile(i, r, "WOOD_01") == null)
-                            System.out.println("can not add a low tile");
+                        case '2' -> {
+                            if (addLowTile(i, r, "WOOD_01") == null)
+                                System.out.println("can not add a low tile");
+                        }
+                        case '3' -> {
+                            if (addLowTile(i, r, "WOOD_02") == null)
+                                System.out.println("can not add a low tile");
+                        }
                     }
                 }
+
                 r++;
             }
 
@@ -308,15 +375,31 @@ public class GamePanelController extends JPanel implements Runnable {
         switch (statusGame) {
             case START -> updateStartGame();
             case PLAYING -> updatePlayingGame();
-            case PAUSE -> System.out.println("PAUSE...");
+            case PAUSE -> {
+                if (buttonMap.containsKey("Continue")) {
+                    buttonMap.get("Continue").update();
+                    if (buttonMap.get("Continue").isPressed()) {
+                        statusGame = StatusGame.PLAYING;
+                        buttonMap.get("Continue").setPressed(false);
+                    }
+                }
+
+            }
             case GAME_OVER -> {
                 if (keyInputController.isPressed(KeyEvent.VK_S)) {
                     restart();
                 }
             }
-            case TRANSITION -> System.out.println("TRANSITION...");
+            case TRANSITION -> {
+
+                delay--;
+
+                if (delay <= 0) {
+                    statusGame = StatusGame.PLAYING;
+                    restartAtLevel(0);
+                }
+            }
             case GAME_TUTORIAL -> {
-                //   System.out.println("GAME TUTORIAL...");
                 --delay;
                 if (buttonMap.containsKey("BACK TO START")) {
                     GButton btn = buttonMap.get("BACK TO START");
@@ -391,6 +474,12 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void updatePlayingGame() {
+        if (keyInputController.isPressed(KeyEvent.VK_K) || numberScores / 10 >= numberOfThreat) {
+            statusGame = StatusGame.TRANSITION;
+            gameLevel++;
+            delay = 200;
+        }
+
         player1.update();
 
         if (player1.isDied()) {
@@ -419,6 +508,15 @@ public class GamePanelController extends JPanel implements Runnable {
                 i--;
             }
         }
+
+        if (buttonMap.containsKey("PAUSE_BTN")) {
+            buttonMap.get("PAUSE_BTN").update();
+            if (((GToggleButton) buttonMap.get("PAUSE_BTN")).isTurnOn()) {
+                statusGame = StatusGame.PAUSE;
+                ((GToggleButton) buttonMap.get("PAUSE_BTN")).setPressed(false);
+            }
+        }
+
         updateOffset();
     }
 
@@ -444,9 +542,9 @@ public class GamePanelController extends JPanel implements Runnable {
         switch (statusGame) {
             case START -> paintStartScreen(g2d);
             case PLAYING -> paintGamePlaying(g2d);
-            case PAUSE -> System.out.println("PAUSE...");
+            case PAUSE -> paintPauseGame(g2d);
             case GAME_OVER -> paintOverScreen(g2d);
-            case TRANSITION -> System.out.println("TRANSITION...");
+            case TRANSITION -> paintTransitionScreen(g2d);
             case GAME_TUTORIAL -> paintGameTutorial(g2d);
             case WIN_GAME -> System.out.println("WIN GAME...");
             default -> System.out.println("ERROR with status game: " + statusGame);
@@ -466,13 +564,13 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void paintInformation(Graphics2D g2d) {
-        if (_heartImage == null) {
+        if (guiImages.get("heartImage") == null) {
             g2d.setFont(customFont.deriveFont(Font.PLAIN, 25f));
             g2d.setColor(Color.WHITE);
             g2d.drawString("Heart: " + player1.getHeart(), 30, 30);
         } else
             for (int i = 0; i < player1.getHeart(); i++) {
-                g2d.drawImage(_heartImage, 40 * i + 20, 20, 35, 35, this);
+                g2d.drawImage(guiImages.get("heartImage"), 40 * i + 20, 20, 35, 35, this);
             }
 
         g2d.setColor(new Color(0, 0, 0, 120));
@@ -485,6 +583,10 @@ public class GamePanelController extends JPanel implements Runnable {
         while (scoreString.length() < 3) scoreString = "0" + scoreString;
 
         g2d.drawString("Score:  " + scoreString + "   | Bomb:  " + player1.getNumberOfBomb(), 40 * player1.getHeart() + 40, 45);
+
+        // Paint pause button
+        if (buttonMap.containsKey("PAUSE_BTN"))
+            buttonMap.get("PAUSE_BTN").draw(g2d);
     }
 
     public void paintBackground(Graphics2D g2d) {
@@ -566,12 +668,14 @@ public class GamePanelController extends JPanel implements Runnable {
         g2d.setColor(new Color(64, 64, 64));
         g2d.fillRect(0, 0, screenWidth, screenHeight);
         g2d.setColor(Color.WHITE);
+        g2d.drawImage(guiImages.get("backgroundGradient"), 0, 0, screenWidth, screenHeight, this);
 
-        GString.drawCenteredString(g2d, "BOMB GAME !", new Rectangle(0, 0, screenWidth, 100), customFont.deriveFont(Font.BOLD, 30f));
+        //GString.drawCenteredString(g2d, "BOMB GAME !", new Rectangle(0, 0, screenWidth, 100), customFont.deriveFont(Font.BOLD, 30f));
+
+        BufferedImage menuImageVertical = guiImages.get("menuImageVertical");
 
         int menuHeight = screenHeight - 50;
         int menuWidth = (int) ((menuHeight * 1.0 / menuImageVertical.getHeight()) * menuImageVertical.getWidth());
-
         g2d.drawImage(menuImageVertical, (screenWidth - menuWidth) / 2, (screenHeight - menuHeight) / 2, menuWidth, menuHeight, this);
 
         if (buttonMap.containsKey("PLAY")) {
@@ -591,11 +695,15 @@ public class GamePanelController extends JPanel implements Runnable {
                 - You have to kill all monsters to win
                 - After win a part you will move to next level""";
 
+        BufferedImage menuImage = guiImages.get("menuImage");
+
         g2d.setColor(new Color(60, 60, 60));
         g2d.fillRect(0, 0, screenWidth, screenHeight);
+
+        g2d.drawImage(guiImages.get("backgroundGradient"), 0, 0, screenWidth, screenHeight, this);
         g2d.drawImage(menuImage, (screenWidth - menuWidth) / 2, (screenHeight - menuHeight) / 2, menuWidth, menuHeight, this);
-        GString.drawCenteredString(g2d, "GAME TUTORIAL", new Rectangle((screenWidth - menuWidth) / 2, 70, menuWidth, 50), customFont.deriveFont(Font.PLAIN, 30f));
-        GString.drawMultipleLine(g2d, content, (screenWidth - menuWidth) / 2 + 50, 150, customFont.deriveFont(Font.PLAIN, 20f));
+        GString.drawCenteredString(g2d, "GAME TUTORIAL", new Rectangle((screenWidth - menuWidth) / 2, (int) (70 + (scale * 1.0 / 3) * 20), menuWidth, 50), customFont.deriveFont(Font.PLAIN, scale * 30f / 3));
+        GString.drawMultipleLine(g2d, content, (int) ((screenWidth - menuWidth) / 2 + 50 * (scale * 1.0 / 3)), screenHeight / 2 - 100, customFont.deriveFont(Font.PLAIN, 20f));
 
         if (buttonMap.containsKey("BACK TO START")) {
             buttonMap.get("BACK TO START").draw(g2d);
@@ -615,6 +723,32 @@ public class GamePanelController extends JPanel implements Runnable {
         paintInformation(g2d);
     }
 
+    public void paintPauseGame(Graphics2D g2d) {
+        g2d.drawImage(guiImages.get("backgroundGradient"), 0, 0, screenWidth, screenHeight, this);
+        BufferedImage menuImageVertical = guiImages.get("menuImageVertical");
+
+        int menuHeight = screenHeight - 150;
+        int menuWidth = (int) ((menuHeight * 1.0 / menuImageVertical.getHeight()) * menuImageVertical.getWidth());
+        g2d.drawImage(menuImageVertical, (screenWidth - menuWidth) / 2, (screenHeight - menuHeight) / 2, menuWidth, menuHeight, this);
+
+        if (buttonMap.containsKey("Continue")) {
+            buttonMap.get("Continue").draw(g2d);
+        }
+    }
+
+    public void paintTransitionScreen(Graphics2D g2d) {
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, screenWidth, screenHeight);
+
+        g2d.setColor(Color.RED);
+        GString.drawCenteredString(g2d, "NEXT: Level " + (gameLevel + 1), new Rectangle(0, 0, screenWidth, screenHeight),
+                customFont.deriveFont(Font.PLAIN, 40f));
+
+        g2d.setColor(Color.BLACK);
+        GString.drawCenteredString(g2d, "Start after " + delay + " ms", new Rectangle(0, screenHeight / 2, screenWidth, 100),
+                customFont.deriveFont(Font.PLAIN, 20f));
+    }
+
     public void paintOverScreen(Graphics2D g2d) {
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, screenWidth, screenHeight);
@@ -627,7 +761,6 @@ public class GamePanelController extends JPanel implements Runnable {
         GString.drawCenteredString(g2d, "Press 'S' to Play Again", new Rectangle(0, screenHeight / 2, screenWidth, 100),
                 customFont.deriveFont(Font.PLAIN, 20f));
     }
-
     // End of [Paint screen method]
 
     // [GETTER & SETTER]
@@ -641,21 +774,18 @@ public class GamePanelController extends JPanel implements Runnable {
         }
         return false;
     }
-    public boolean detectTitle(int cl, int r) {
-        try {
-            if (this._tileMap[r][cl])
-                return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return false;
-        }
 
+    public boolean detectLowTile(int cl, int r) {
         for (Entity e : _entities)
             if (e instanceof LowTile16bit
                     && isCollision(new Rectangle(e.getX(), e.getY(), e.getWidth(), e.getHeight()),
                     new Rectangle(cl * tileSize, r * tileSize, tileSize, tileSize)))
                 return true;
-
         return false;
+    }
+
+    public boolean detectTitle(int cl, int r) {
+        return detectHardTile(cl, r) || detectLowTile(cl, r);
     }
 
     public static boolean isCollision(Rectangle r1, Rectangle r2) {
@@ -698,14 +828,19 @@ public class GamePanelController extends JPanel implements Runnable {
     public void addEntity(Entity entity) {
         _entities.add(entity);
     }
+
     public boolean addExplosion(Explosion e) {
         int cl = e.getX() / tileSize;
         int r = e.getY() / tileSize;
 
-        if (cl < 0 || r < 0 || cl >= viewportWidth / tileSize || r >= viewportHeight / tileSize) return false;
-        if (detectHardTile(cl, r)) return false;
-        System.out.println("ADD Explosion");
+        // this explosion is outside the game screen.
+        boolean isOutside = (cl < 0 || r < 0 || cl >= viewportWidth / tileSize || r >= viewportHeight / tileSize);
+        boolean isInsideAHardTile = detectHardTile(cl, r); // this explosion is stopped by a hard tile.
+
+        if (isOutside || isInsideAHardTile) return false; // can not add this
+
         _entities.add(e);
+
         return true;
     }
 

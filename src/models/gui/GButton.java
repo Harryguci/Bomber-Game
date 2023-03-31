@@ -15,14 +15,8 @@ import java.awt.image.BufferedImage;
 
 public class GButton extends Entity {
 
-    public static BufferedImage _normalImage;
-    public static BufferedImage _clickedImage;
-
-    static {
-        BufferedImage temp = ImageReader.Read("GameUI\\button01.png");
-        _normalImage = temp.getSubimage(0, 0, temp.getWidth(), temp.getHeight() / 2);
-        _clickedImage = temp.getSubimage(0, temp.getHeight() / 2, temp.getWidth(), temp.getHeight() / 2);
-    }
+    public BufferedImage _normalImage;
+    public BufferedImage _clickedImage;
 
     private String _content;
     private GamePanelController gamePanelController;
@@ -41,6 +35,10 @@ public class GButton extends Entity {
         this.gamePanelController = gamePanelController;
         this.mouseInputController = mouseInputController;
         this.setName(content);
+// default
+        BufferedImage temp = ImageReader.Read("GameUI\\button01.png");
+        _normalImage = temp.getSubimage(0, 0, temp.getWidth(), temp.getHeight() / 2);
+        _clickedImage = temp.getSubimage(0, temp.getHeight() / 2, temp.getWidth(), temp.getHeight() / 2);
     }
 
     public GButton(String content, int x, int y, int width, int height, GamePanelController gamePanelController, MouseInputController mouseInputController) {
@@ -54,6 +52,10 @@ public class GButton extends Entity {
         this.gamePanelController = gamePanelController;
         this.mouseInputController = mouseInputController;
         this.setName(content);
+// default
+        BufferedImage temp = ImageReader.Read("GameUI\\button01.png");
+        _normalImage = temp.getSubimage(0, 0, temp.getWidth(), temp.getHeight() / 2);
+        _clickedImage = temp.getSubimage(0, temp.getHeight() / 2, temp.getWidth(), temp.getHeight() / 2);
     }
 
     public GButton(String content, int screenWidth, int screenHeight, GamePanelController gamePanelController, MouseInputController mouseInputController) {
@@ -79,6 +81,23 @@ public class GButton extends Entity {
         }
     }
 
+    public GButton(String content, int x, int y, int width, int height, BufferedImage normalImage, BufferedImage clickedImage, GamePanelController gamePanelController, MouseInputController mouseInputController) {
+        super();
+        this._x = x;
+        this._y = y;
+        this._width = width;
+        this._height = height;
+        this._content = content;
+        isCollied = false;
+        this.gamePanelController = gamePanelController;
+        this.mouseInputController = mouseInputController;
+        this.setName(content);
+
+        // Manual
+        _normalImage = normalImage;
+        _clickedImage = clickedImage;
+    }
+
     @Override
     public void draw(Graphics2D g2d) {
         if (_normalImage != null && _clickedImage != null) {
@@ -97,13 +116,15 @@ public class GButton extends Entity {
             }
         }
 
-        //draw content.
-        if (g2d.getColor() != Color.white)
-            g2d.setColor(Color.white);
-        if (g2d.getFont() != font)
-            g2d.setFont(font);
+        if (!_content.equals("")) {
+            //draw content.
+            if (g2d.getColor() != Color.white)
+                g2d.setColor(Color.white);
+            if (g2d.getFont() != font)
+                g2d.setFont(font);
 
-        GString.drawCenteredString(g2d, _content, new Rectangle(_x, _y, _width, _height), font);
+            GString.drawCenteredString(g2d, _content, new Rectangle(_x, _y, _width, _height), font);
+        }
     }
 
     @Override
@@ -140,6 +161,7 @@ public class GButton extends Entity {
     public void setTextColor(Color color) {
         textColor = color;
     }
+
     public void setPressed(boolean b) {
         isPressed = b;
     }

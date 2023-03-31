@@ -20,6 +20,8 @@ public class Zombie extends AbleMoveEntity {
 
     private int _heart = 3;
     private int maxHeart = 3;
+    private float scale = 0.18f;
+
 
     public Zombie(int x, int y, GamePanelController gamePanelController, KeyInputController keyInputController) {
         super(gamePanelController, keyInputController);
@@ -28,7 +30,9 @@ public class Zombie extends AbleMoveEntity {
         _width = _height = gamePanelController.tileSize;
         direction = Direction.LEFT;
         setSpeed(2, 2);
-        renderer.setScale(0.18);
+
+        scale *= gamePanelController.getScale() * 1.0 / 3;
+        renderer.setScale(scale);
     }
 
     @Override
@@ -140,6 +144,12 @@ public class Zombie extends AbleMoveEntity {
     @Override
     public void update() {
         _animate--;
+
+        if (_animate < -9000)
+            _animate = 9001;
+        if (hurtDelay > 0)
+            hurtDelay--;
+
         if (direction != Direction.DIED) {
             move();
             handleBombed();

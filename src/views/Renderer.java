@@ -10,7 +10,7 @@ public class Renderer {
     private final int spriteWidth;
     private final int spriteHeight;
     private final BufferedImage _spriteSheet;
-    private double scale = 1;
+    private float scale = 1f;
     private int gap = 0;
 
     public Renderer(int spw, int sph, BufferedImage spriteSheet) {
@@ -50,19 +50,27 @@ public class Renderer {
         }
     }
 
+    public BufferedImage getSubimage(int cl, int r) {
+        return _spriteSheet.getSubimage(cl * spriteWidth, r * spriteHeight, spriteWidth, spriteHeight);
+    }
+
+
     public double getScale() {
         return this.scale;
     }
+
     public void setGap(int gap) {
         this.gap = gap;
     }
 
-    public void setScale(double scale) {
+    public void setScale(float scale) {
         this.scale = scale;
     }
+
     public int getSpriteWidth() {
         return spriteWidth;
     }
+
     public int getSpriteHeight() {
         return spriteHeight;
     }

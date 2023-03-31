@@ -14,7 +14,7 @@ public class Zombie extends AbleMoveEntity {
     public Zombie(GamePanelController gamePanelController, KeyInputController keyInputController) {
         super(gamePanelController, keyInputController);
         _x = _y = 20;
-        renderer.setScale(0.5);
+        renderer.setScale(0.5f);
     }
 
     @Override

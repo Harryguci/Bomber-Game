@@ -49,7 +49,7 @@ public class LowTile extends Entity {
         }
 
         _width = _height = gamePanelController.tileSize;
-        double s = _width / 16;
+        float s = (float)(_width / 16);
         render.setScale(s);
     }
 

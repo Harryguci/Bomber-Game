@@ -5,7 +5,6 @@ import views.Renderer;
 import models.gui.Sprite;
 import controllers.GamePanelController;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
@@ -42,50 +41,13 @@ public class Bomb extends Entity {
 
     @Override
     public void draw(Graphics2D g2d) {
-//        if (!isExplosion) {
-            if (Math.abs(_animate % 10) < 5) {
-                renderer.setScale(gamePanelController.getScale() * 1.0 / 3);
-                renderer.render(g2d, 0, 0, _x, _y, gamePanelController.getXOffset());
-            } else {
-                renderer.setScale(gamePanelController.getScale() * 1.0 / 3);
-                renderer.render(g2d, 1, 0, _x, _y, gamePanelController.getXOffset());
-            }
-//        } else {
-
-//            g2d.setColor(new Color(255, 0, 0, 150));
-//            g2d.fillRect(_x - gamePanelController.getXOffset(), _y - gamePanelController.getYOffset(), _width, _height);
-//            int x = _x - _length * gamePanelController.tileSize - gamePanelController.getXOffset();
-//            int y = _y - gamePanelController.getYOffset();
-//            int cornerRounded = 15;
-//            g2d.fillRoundRect(x, y, _length * gamePanelController.tileSize * 2 + gamePanelController.tileSize, gamePanelController.tileSize, cornerRounded, cornerRounded);
-//            x = _x - gamePanelController.getXOffset();
-//            y = _y - _length * gamePanelController.tileSize - gamePanelController.getYOffset();
-//            g2d.fillRoundRect(x, y, gamePanelController.tileSize, _length * gamePanelController.tileSize * 2 + gamePanelController.tileSize, cornerRounded, cornerRounded);
-//
-//
-//            int d = Math.abs(_animate % 55);
-//            int cl = 7;
-//
-//            if (d < 25) {
-//                cl = 7;
-//            } else if (d < 30) {
-//                cl = 6;
-//            } else if (d < 35) {
-//                cl = 5;
-//            } else if (d < 40) {
-//                cl = 4;
-//            } else if (d < 45) {
-//                cl = 3;
-//            } else if (d < 54) {
-//                cl = 2;
-//            }
-//
-//            if (cl <= 7) {
-//                renderer.setScale(1.5 * gamePanelController.getScale() * 1.0 / 3);
-//                renderer.render(g2d, cl, 0, _x - 12, _y - 12, gamePanelController.getXOffset());
-//                renderer.setScale(gamePanelController.getScale() * 1.0 / 3);
-//            }
-//        }
+        if (Math.abs(_animate % 10) < 5) {
+            renderer.setScale((float) (gamePanelController.getScale() * 1.0 / 3));
+            renderer.render(g2d, 0, 0, _x, _y, gamePanelController.getXOffset());
+        } else {
+            renderer.setScale((float) (gamePanelController.getScale() * 1.0 / 3));
+            renderer.render(g2d, 1, 0, _x, _y, gamePanelController.getXOffset());
+        }
     }
 
     @Override
@@ -112,10 +74,11 @@ public class Bomb extends Entity {
         int cl = _x / gamePanelController.tileSize;
         int r = _y / gamePanelController.tileSize;
 
+        // Add current location
         addOneExplosion(cl, r);
 
         // LEFT SIDE
-        for (int i = 1; i >= -_length; i--) {
+        for (int i = -1; i >= -_length; i--) {
             if (!addOneExplosion(cl + i, r))
                 break;
         }
@@ -127,13 +90,13 @@ public class Bomb extends Entity {
         }
 
         // UP SIDE
-        for (int i = 1; i >= -_length; i--) {
+        for (int i = -1; i >= -_length; i--) {
             if (!addOneExplosion(cl, r + i))
                 break;
         }
 
         // DOWN SIDE
-        for (int i = 0; i <= _length; i++) {
+        for (int i = 1; i <= _length; i++) {
             if (!addOneExplosion(cl, r + i))
                 break;
         }

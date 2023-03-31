@@ -2,7 +2,6 @@ package models.tiles;
 
 import models.Entity;
 import models.Entity16bit;
-import models.bomb.Bomb;
 import models.bomb.Explosion;
 import views.RenderPixel;
 import java.awt.Graphics2D;

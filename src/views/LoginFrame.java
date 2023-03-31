@@ -29,6 +29,7 @@ public class LoginFrame extends JFrame implements ActionListener {
     private LoginController loginController;
 
     private int width = 500, height = 350;
+
     public LoginFrame(LoginController loginController) {
         // Set frame properties
         Color backgroundColor = new Color(70, 70, 70);
