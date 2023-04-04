@@ -3,13 +3,7 @@ package views;
 import config.db.Config;
 import controllers.LoginController;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -28,7 +22,7 @@ public class LoginFrame extends JFrame implements ActionListener {
     private JButton loginButton, cancelButton;
     private LoginController loginController;
 
-    private int width = 500, height = 350;
+    private int width = 550, height = 420;
 
     public LoginFrame(LoginController loginController) {
         // Set frame properties
@@ -38,10 +32,14 @@ public class LoginFrame extends JFrame implements ActionListener {
         this.loginController = loginController;
 
         setTitle("BOMBER GAME | Login");
-        setSize(500, 350);
-        setLayout(new GridLayout(7, 2));
+        setSize(width, height);
+        setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true); // hide the title bar and window decorations
+
+        JPanel formPanel = new JPanel(new GridLayout(4, 2));
+        formPanel.setSize(new Dimension(500, 300));
+        formPanel.setPreferredSize(new Dimension(500, 300));
 
         // Create components
         usernameLabel = new JLabel("Username:");
@@ -84,37 +82,35 @@ public class LoginFrame extends JFrame implements ActionListener {
         cancelButton.setForeground(new Color(100, 100, 100));
         cancelButton.setBackground(new Color(200, 200, 200));
 
-        List<JLabel> listSpace = new ArrayList<>();
-
-        add(new JLabel(""));
-        add(new JLabel(""));
-        add(new JLabel(""));
 
         JLabel heading = new JLabel("BOMBER GAME");
         heading.setFont(new Font("Roboto", Font.BOLD, 33));
         heading.setHorizontalAlignment(SwingConstants.LEFT);
         heading.setForeground(new Color(150, 150, 255));
+        heading.setSize(550,50);
+        heading.setLocation(width/2 - 110, 30);
 
         // Add components to frame
         add(heading);
-        add(new JLabel(""));
-        add(new JLabel(""));
 
-        add(usernameLabel);
-        add(usernameField);
+        formPanel.add(usernameLabel);
+        formPanel.add(usernameField);
 
-        add(passwordLabel);
-        add(passwordField);
+        formPanel.add(passwordLabel);
+        formPanel.add(passwordField);
 
-        add(new JLabel(""));
-        add(new JLabel(""));
+        formPanel.add(new JLabel(""));
+        formPanel.add(new JLabel(""));
 
-        add(cancelButton);
-        add(loginButton);
+        formPanel.add(cancelButton);
+        formPanel.add(loginButton);
 
+        formPanel.setLocation(25, 110);
         // Add action listener to login button
         loginButton.addActionListener(this);
         cancelButton.addActionListener(e -> dispose());
+        formPanel.setBackground(backgroundColor);
+        add(formPanel);
 
         Dimension screenSize = Config.deviceScreenSize;
         setLocation(new Point((screenSize.width - width) / 2, (screenSize.height - height) / 2));

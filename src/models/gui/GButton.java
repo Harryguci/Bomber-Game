@@ -12,6 +12,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 
 public class GButton extends Entity {
 
@@ -26,6 +27,8 @@ public class GButton extends Entity {
     private int delay = 50;
 
     private boolean isPressed = false;
+
+    final static private BufferedImage BTN_IMAGE01 = ImageReader.Read(Path.of("GameUI", "button01.png").toString());
     private Font font;
 
     public GButton(String content, GamePanelController gamePanelController, MouseInputController mouseInputController) {
@@ -35,10 +38,9 @@ public class GButton extends Entity {
         this.gamePanelController = gamePanelController;
         this.mouseInputController = mouseInputController;
         this.setName(content);
-// default
-        BufferedImage temp = ImageReader.Read("GameUI\\button01.png");
-        _normalImage = temp.getSubimage(0, 0, temp.getWidth(), temp.getHeight() / 2);
-        _clickedImage = temp.getSubimage(0, temp.getHeight() / 2, temp.getWidth(), temp.getHeight() / 2);
+
+        _normalImage = BTN_IMAGE01.getSubimage(0, 0, BTN_IMAGE01.getWidth(), BTN_IMAGE01.getHeight() / 2);
+        _clickedImage = BTN_IMAGE01.getSubimage(0, BTN_IMAGE01.getHeight() / 2, BTN_IMAGE01.getWidth(), BTN_IMAGE01.getHeight() / 2);
     }
 
     public GButton(String content, int x, int y, int width, int height, GamePanelController gamePanelController, MouseInputController mouseInputController) {
@@ -53,32 +55,27 @@ public class GButton extends Entity {
         this.mouseInputController = mouseInputController;
         this.setName(content);
 // default
-        BufferedImage temp = ImageReader.Read("GameUI\\button01.png");
-        _normalImage = temp.getSubimage(0, 0, temp.getWidth(), temp.getHeight() / 2);
-        _clickedImage = temp.getSubimage(0, temp.getHeight() / 2, temp.getWidth(), temp.getHeight() / 2);
+
+        _normalImage = BTN_IMAGE01.getSubimage(0, 0, BTN_IMAGE01.getWidth(), BTN_IMAGE01.getHeight() / 2);
+        _clickedImage = BTN_IMAGE01.getSubimage(0, BTN_IMAGE01.getHeight() / 2, BTN_IMAGE01.getWidth(), BTN_IMAGE01.getHeight() / 2);
     }
 
     public GButton(String content, int screenWidth, int screenHeight, GamePanelController gamePanelController, MouseInputController mouseInputController) {
         super();
-        try {
-            Dimension strSize1 = GString.getStringSize((Graphics2D) gamePanelController.getGraphics(), "PLAY", new Font("Roboto", Font.PLAIN, 15));
-            Dimension btnSize1 = new Dimension(strSize1.width + 70, strSize1.height + 30);
+        Dimension strSize1 = GString.getStringSize((Graphics2D) gamePanelController.getGraphics(), "PLAY", new Font("Roboto", Font.PLAIN, 15));
+        Dimension btnSize1 = new Dimension(strSize1.width + 70, strSize1.height + 30);
 
-            _content = content;
-            _x = (screenWidth - btnSize1.width) / 2;
-            _y = (screenHeight - btnSize1.height) / 2;
-            _width = btnSize1.width;
-            _height = btnSize1.height;
+        _content = content;
+        _x = (screenWidth - btnSize1.width) / 2;
+        _y = (screenHeight - btnSize1.height) / 2;
+        _width = btnSize1.width;
+        _height = btnSize1.height;
 
-            this.gamePanelController = gamePanelController;
-            this.mouseInputController = mouseInputController;
+        this.gamePanelController = gamePanelController;
+        this.mouseInputController = mouseInputController;
 
-            this.setFont(new Font("Roboto", Font.PLAIN, 15));
-            this.setName(content);
-
-        } catch (Exception e) {
-
-        }
+        this.setFont(new Font("Roboto", Font.PLAIN, 15));
+        this.setName(content);
     }
 
     public GButton(String content, int x, int y, int width, int height, BufferedImage normalImage, BufferedImage clickedImage, GamePanelController gamePanelController, MouseInputController mouseInputController) {
@@ -139,14 +136,11 @@ public class GButton extends Entity {
             isPressed = true;
 
             backgroundOverlayColor = new Color(0, 0, 0, 50);
-            delay = 10;
-            gamePanelController.setDelay(20);
-        } else {
-            delay--;
-            if (delay <= 0) {
+
+            GamePanelController.setTimeout(500, () -> {
                 backgroundOverlayColor = null;
-                delay = 0;
-            }
+                setPressed(false);
+            });
         }
     }
 

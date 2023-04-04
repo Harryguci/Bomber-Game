@@ -6,16 +6,13 @@ import models.BackgroundType;
 import models.Entity;
 import models.bomb.Bomb;
 import models.bomb.Explosion;
-import models.gui.GButton;
-import models.gui.GString;
-import models.gui.GToggleButton;
-import models.gui.Sprite;
+import models.gui.*;
 import models.mainObject.MainObject;
 import models.tiles.LowTile16bit;
 import models.threat.Zombie;
 import util.ImageReader;
 import models.tiles.TileKind;
-import views.Renderer;
+import util.MyFunction;
 
 import javax.swing.*;
 import java.awt.Color;
@@ -54,15 +51,11 @@ public class GamePanelController extends JPanel implements Runnable {
     public int screenWidth = tileSize * maxScreenCol;
     public int screenHeight = tileSize * maxScreenRow;
     private String _language = "ENG";
-
     private int viewportWidth = tileSize * 104; // viewport width default set 104 columns
     private int viewportHeight = screenHeight; // viewport height default set equals the window's height.
-
     private int xOffset = 0;    // x offset
     private int yOffset = 0;    // At 1.0 version don't use yet.
-
     private Thread gameThread;  // main thread
-
     private final Color _objectColor = new Color(50, 50, 50);       // for case can not get images
     private final Color _backgroundColor = new Color(214, 160, 84); // for case can not get images
     private boolean[][] _tileMap = new boolean[maxScreenRow][30];   // save the location matrix of tiles (walls) as a boolean matrix
@@ -75,9 +68,11 @@ public class GamePanelController extends JPanel implements Runnable {
     private final List<BufferedImage> tiles = new ArrayList<>();
     private final List<BufferedImage> backgroundImage = new ArrayList<>();  // store background images
     private final Map<String, GButton> buttonMap = new HashMap<>(); // store buttons
+
+    private final CustomButton demoButton = new CustomButton("CLICK", this);
     private final Map<String, BufferedImage> guiImages = new HashMap<>();
     private Font customFont;
-    private int _animate = 0, delay = 0, numberScores = 0, gameLevel = 0, numberOfThreat = 100;
+    private int _animate = 0, delay = 0, countDown = -1, numberScores = 0, gameLevel = 0, numberOfThreat = 100;
 
     public GamePanelController() {
         initScreen();   // init information for game screen
@@ -163,7 +158,7 @@ public class GamePanelController extends JPanel implements Runnable {
         w = (int) (150 * scale * 1.0 / 3);
         GButton tutorialBtn = new GButton("TUTORIAL", (screenWidth - w) / 2, screenHeight / 3 + (int) (h * 1.3), w, h, this, mouseInputController);
 
-        GToggleButton pauseBtn = new GToggleButton("", screenWidth - 80, 20, 50, 50,
+        GToggleButton pauseBtn = new GToggleButton("", screenWidth - 80, 20, (int) (50 * 4.0 / 3), (int) (50 * 4.0 / 3),
                 Sprite.PAUSE_BTN.getSubimage(0, 0), Sprite.PAUSE_BTN.getSubimage(1, 0), this, mouseInputController);
 
         GButton continueBtn = new GButton("Continue", (screenWidth - w) / 2, screenHeight / 3, w, h, this, mouseInputController);
@@ -377,13 +372,16 @@ public class GamePanelController extends JPanel implements Runnable {
             case PLAYING -> updatePlayingGame();
             case PAUSE -> {
                 if (buttonMap.containsKey("Continue")) {
+                    buttonMap.get("Continue").setY(screenHeight / 2);
+
                     buttonMap.get("Continue").update();
                     if (buttonMap.get("Continue").isPressed()) {
-                        statusGame = StatusGame.PLAYING;
-                        buttonMap.get("Continue").setPressed(false);
+                        setTimeout(300,() -> {
+                            statusGame = StatusGame.PLAYING;
+                            buttonMap.get("Continue").setPressed(false);
+                        });
                     }
                 }
-
             }
             case GAME_OVER -> {
                 if (keyInputController.isPressed(KeyEvent.VK_S)) {
@@ -391,28 +389,27 @@ public class GamePanelController extends JPanel implements Runnable {
                 }
             }
             case TRANSITION -> {
-
-                delay--;
-
-                if (delay <= 0) {
-                    statusGame = StatusGame.PLAYING;
-                    restartAtLevel(0);
+                if (buttonMap.containsKey("Continue")) {
+                    buttonMap.get("Continue").update();
+                    if (buttonMap.get("Continue").isPressed()) {
+                        setTimeout(300, () -> {
+                            buttonMap.get("Continue").setPressed(false);
+                            statusGame = StatusGame.PLAYING;
+                            restartAtLevel(0);
+                        });
+                    }
                 }
             }
             case GAME_TUTORIAL -> {
-                --delay;
                 if (buttonMap.containsKey("BACK TO START")) {
                     GButton btn = buttonMap.get("BACK TO START");
-                    if (delay < -7500)
-                        delay = -1;
 
                     btn.update();
                     if (btn.isPressed()) {
-                        if (delay < 0) delay = 5;
-                        if (delay == 0) {
+                        setTimeout(300, () -> {
                             statusGame = StatusGame.START;
                             buttonMap.remove("BACK TO START");
-                        }
+                        });
                     }
                 }
             }
@@ -420,22 +417,29 @@ public class GamePanelController extends JPanel implements Runnable {
             default -> System.out.println("ERROR with status game: " + statusGame);
         }
     }
+    public static void setTimeout(int delay, MyFunction f) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            f.apply();
+        }).start();
+    }
 
     public void updateStartGame() {
         --_animate;
-        --delay;
 
-        // don't let _animate and delay too small
         if (_animate < -7500)
             _animate = 7501;
-        if (delay < -7500)
-            delay = -1;
 
         // press 'S' to start game
         if (keyInputController.isPressed(KeyEvent.VK_S)) {
-            if (delay < 0) delay = 10;
-            if (delay == 0)
+            setTimeout(300, () -> {
                 statusGame = StatusGame.PLAYING;
+                buttonMap.get("Continue").setPressed(false);
+            });
         }
 
         // click on the play button
@@ -443,9 +447,7 @@ public class GamePanelController extends JPanel implements Runnable {
             buttonMap.get("TUTORIAL").update();
 
             if (buttonMap.get("TUTORIAL").isPressed()) {
-                if (delay < 0)
-                    delay = 5;
-                else if (delay == 0) {
+                setTimeout(300, () -> {
                     int w = 200;
                     int h = 70;
                     GButton backBtn = new GButton("BACK TO START", (screenWidth - w) / 2, screenHeight - 150, w, h, this, mouseInputController);
@@ -454,7 +456,7 @@ public class GamePanelController extends JPanel implements Runnable {
                     buttonMap.put(backBtn.getName(), backBtn);
                     statusGame = StatusGame.GAME_TUTORIAL;
                     buttonMap.get("TUTORIAL").setPressed(false);
-                }
+                });
             }
         }
 
@@ -462,30 +464,32 @@ public class GamePanelController extends JPanel implements Runnable {
             buttonMap.get("PLAY").update();
 
             if (buttonMap.get("PLAY").isPressed()) {
-                if (delay < 0)
-                    delay = 5;
-                else if (delay == 0) {
+                setTimeout(300, () -> {
                     statusGame = StatusGame.PLAYING;
                     buttonMap.get("PLAY").setPressed(false);
-                }
+                });
             }
         }
 
     }
 
     public void updatePlayingGame() {
+        // Next level
         if (keyInputController.isPressed(KeyEvent.VK_K) || numberScores / 10 >= numberOfThreat) {
-            statusGame = StatusGame.TRANSITION;
-            gameLevel++;
-            delay = 200;
+            setTimeout(300, () -> {
+                statusGame = StatusGame.TRANSITION;
+                gameLevel++;
+            });
+            return;
         }
 
         player1.update();
 
         if (player1.isDied()) {
-            delay--;
-            if (delay <= 0)
+            setTimeout(1000, () -> {
                 statusGame = StatusGame.GAME_OVER;
+            });
+
             return;
         }
 
@@ -513,7 +517,7 @@ public class GamePanelController extends JPanel implements Runnable {
             buttonMap.get("PAUSE_BTN").update();
             if (((GToggleButton) buttonMap.get("PAUSE_BTN")).isTurnOn()) {
                 statusGame = StatusGame.PAUSE;
-                ((GToggleButton) buttonMap.get("PAUSE_BTN")).setPressed(false);
+                buttonMap.get("PAUSE_BTN").setPressed(false);
             }
         }
 
@@ -670,8 +674,6 @@ public class GamePanelController extends JPanel implements Runnable {
         g2d.setColor(Color.WHITE);
         g2d.drawImage(guiImages.get("backgroundGradient"), 0, 0, screenWidth, screenHeight, this);
 
-        //GString.drawCenteredString(g2d, "BOMB GAME !", new Rectangle(0, 0, screenWidth, 100), customFont.deriveFont(Font.BOLD, 30f));
-
         BufferedImage menuImageVertical = guiImages.get("menuImageVertical");
 
         int menuHeight = screenHeight - 50;
@@ -744,9 +746,14 @@ public class GamePanelController extends JPanel implements Runnable {
         GString.drawCenteredString(g2d, "NEXT: Level " + (gameLevel + 1), new Rectangle(0, 0, screenWidth, screenHeight),
                 customFont.deriveFont(Font.PLAIN, 40f));
 
-        g2d.setColor(Color.BLACK);
-        GString.drawCenteredString(g2d, "Start after " + delay + " ms", new Rectangle(0, screenHeight / 2, screenWidth, 100),
-                customFont.deriveFont(Font.PLAIN, 20f));
+        if (buttonMap.containsKey("Continue") && buttonMap.get("Continue").isPressed()) {
+            // g2d.setColor(Color.BLACK);
+
+//            GString.drawCenteredString(g2d, "Start after " + countDown + " ms", new Rectangle(0, screenHeight / 2, screenWidth, 100),
+//                    customFont.deriveFont(Font.PLAIN, 20f));
+        } else if (buttonMap.containsKey("Continue")) {
+            buttonMap.get("Continue").draw(g2d);
+        }
     }
 
     public void paintOverScreen(Graphics2D g2d) {

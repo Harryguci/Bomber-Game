@@ -19,23 +19,25 @@ import util.ImageReader;
 
 public class MainObject extends AbleMoveEntity {
     private int _heart = 3;
-    private int delay = 0, hurtDelay = 20, delayAfterPutBomb = 30;
-    private int _numberOfBomb = 1;
+    private int delayAfterPutBomb = 30;
+    private int _numberOfBomb = 3;
     private final Renderer _render;
-    private Color _color = new Color(20, 20, 100);
+    private Color _color = null;
+
+    private boolean canPutBoom = true, canHurt = true;
 
     public MainObject(GamePanelController gamePanelController, KeyInputController keyInputController) {
         super(gamePanelController, keyInputController);
 
-        _speedX = 3; // Can only up and down
-        _speedY = 3;
+        _speedX = (int) Math.ceil(2 * gamePanelController.getScale() * 1.0 / 3); // Can only up and down
+        _speedY = (int) Math.ceil(2 * gamePanelController.getScale() * 1.0 / 3);
 
         _y = 3 * gamePanelController.tileSize;
         _x = 2 * gamePanelController.tileSize;
 
         _width = _height = gamePanelController.tileSize;
 
-        float sc = (float)(gamePanelController.tileSize * 1.0 / 120);
+        float sc = (float) (gamePanelController.tileSize * 1.0 / 120);
         _render = Sprite.PLAYER_01;
         _render.setScale(sc);
     }
@@ -136,18 +138,22 @@ public class MainObject extends AbleMoveEntity {
     }
 
     public void putBomb() {
-        if (keyInputController.isPressed("space") && _numberOfBomb > 0 && delay <= 0) {
+        if (keyInputController.isPressed("space") && _numberOfBomb > 0 && canPutBoom) {
             int bombX = (_x + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
             int bombY = (_y + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
 
             gamePanelController.addEntity(new Bomb(bombX, bombY, _width, _height, gamePanelController));
             keyInputController.setReleased(KeyEvent.VK_SPACE);
-            delay = 20;
+
             _numberOfBomb--;
             delayAfterPutBomb = 20;
-        }
 
-        if (delay > 0) delay--;
+            canPutBoom = false;
+
+            GamePanelController.setTimeout(300, ()-> {
+                canPutBoom = true;
+            });
+        }
     }
 
     public void updateCollideRect() {
@@ -167,7 +173,7 @@ public class MainObject extends AbleMoveEntity {
     public void setDefault() {
         direction = Direction.DEFAULT;
         _x = _y = _width = _height = gamePanelController.tileSize;
-        _color = new Color(20, 20, 100);
+        _color = null;
         _numberOfBomb = 1;
     }
 
@@ -196,31 +202,26 @@ public class MainObject extends AbleMoveEntity {
 
         Entity e = gamePanelController.detectEntity(rect);
 
-        hurtDelay--;
-
         if (
-                hurtDelay <= 0
-                        && ((e instanceof Explosion)
+                canHurt && ((e instanceof Explosion)
                         || (e instanceof Zombie && !((Zombie) e).getDirection().equals("DIED")))
         ) {
             _heart--;
             _color = new Color(255, 0, 0, 100);
 
-            hurtDelay = 100;
-
-            if (delay == 0)
-                delay = 100;
+            canHurt = false;
+            GamePanelController.setTimeout(1000, () -> {
+                canHurt = true;
+            });
+            GamePanelController.setTimeout(3000, () -> {
+                _color = null;
+            });
 
             if (_heart <= 0) {
                 direction = Direction.DIED;
-                gamePanelController.setDelay(100);
                 return true;
             }
         }
-        if (delay <= 0) {
-            _color = null;
-        } else
-            delay--;
 
         return false;
     }

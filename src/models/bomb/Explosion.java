@@ -31,8 +31,8 @@ public class Explosion extends Entity {
 
     @Override
     public void draw(Graphics2D g2d) {
-        g2d.setColor(_color);
-        g2d.fillRect(_x - gamePanelController.getXOffset(), _y, _width, _height);
+//        g2d.setColor(_color);
+//        g2d.fillRect(_x - gamePanelController.getXOffset(), _y, _width, _height);
 
         int cl = Math.abs((timer - 30) % 30) / 5 + 2;
 

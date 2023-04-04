@@ -16,7 +16,7 @@ import java.awt.Rectangle;
 
 public class Zombie extends AbleMoveEntity {
     private Renderer renderer = Sprite.ZOMBIE_01;
-    private int delay = 0, hurtDelay = 0;
+    private int delay = 0, hurtDelay = 0, countDown = 50;
 
     private int _heart = 3;
     private int maxHeart = 3;
@@ -29,7 +29,7 @@ public class Zombie extends AbleMoveEntity {
         _y = y;
         _width = _height = gamePanelController.tileSize;
         direction = Direction.LEFT;
-        setSpeed(2, 2);
+        setSpeed((int) Math.ceil(gamePanelController.getScale() * 1.0 / 3), (int) Math.ceil(gamePanelController.getScale() * 1.0 / 3));
 
         scale *= gamePanelController.getScale() * 1.0 / 3;
         renderer.setScale(scale);
@@ -109,6 +109,11 @@ public class Zombie extends AbleMoveEntity {
 
     @Override
     public void draw(Graphics2D g2d) {
+        if (countDown > 0) {
+            g2d.setColor(new Color(255, 0, 0, countDown * 4));
+            g2d.fillRoundRect(_x, _y, _width, _height, 30, 30);
+            return;
+        }
         if (direction == Direction.DIED) {
             renderer.render(g2d, 7, 0, _x - 10, _y, gamePanelController.getXOffset()); // render on screen
             return;
@@ -143,8 +148,11 @@ public class Zombie extends AbleMoveEntity {
 
     @Override
     public void update() {
+        if (countDown > 0) {
+            countDown--;
+            return;
+        }
         _animate--;
-
         if (_animate < -9000)
             _animate = 9001;
         if (hurtDelay > 0)

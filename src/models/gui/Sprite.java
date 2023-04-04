@@ -1,7 +1,6 @@
 package models.gui;
 
 import views.Renderer;
-
 import java.nio.file.Path;
 
 public class Sprite {
