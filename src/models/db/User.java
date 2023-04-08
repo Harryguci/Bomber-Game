@@ -3,16 +3,20 @@ package models.db;
 public class User {
     private String username = "";
     private String password = "";
-
-    private int maxScore = 0;
+    private int maxScore = 0, level = 0;
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
-    public User(String username, String password, int maxScore) {
+    public User(String username, String password, int level) {
         this(username, password);
+        this.level = level;
+    }
+
+    public User(String username, String password, int level, int maxScore) {
+        this(username, password, level);
         this.maxScore = maxScore;
     }
 
@@ -36,11 +40,24 @@ public class User {
         return this;
     }
 
+    public User setLevel(int level) {
+        this.level = level;
+        return this;
+    }
+
+    public int getLevel() {
+        return this.level;
+    }
+
     public String getUsername() {
         return username;
     }
 
     public String getPassword() {
         return password;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
     }
 }

@@ -10,6 +10,7 @@ public class LoginController {
     private LoginFrame loginFrame;
     private String username = "", password = "";
     private boolean isLogin = false;
+    private User user;
 
     public LoginController() {
         loginFrame = new LoginFrame(this);
@@ -26,23 +27,25 @@ public class LoginController {
         return checkUsername && checkPassword;
     }
 
-    public void login(String username, String password) {
+    public User login(String username, String password) {
         if (!validate(username, password)) {
             JOptionPane.showMessageDialog(loginFrame, "Your information is wrong format", "Login Failed", JOptionPane.WARNING_MESSAGE);
-            return;
+            return null;
         }
 
         User user = UserController.findOne(username, password);
         if (user != null) {
             this.username = user.getUsername();
             this.password = user.getPassword();
-            System.out.println("Login Successfully: Welcome " + user.getUsername());
 
-            JOptionPane.showMessageDialog(loginFrame, "WELCOME BACK " + user.getUsername(), "Login Successfully", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(loginFrame, "<html><h2>WELCOME BACK</h2><p>USERNAME: " + user.getUsername() + "</p><p>PASSWORD: " + user.getPassword() + "</p><p>LEVEL: " + user.getLevel() + "</p><br><html>", "Login Successfully", JOptionPane.INFORMATION_MESSAGE);
             isLogin = true;
         } else
             JOptionPane.showMessageDialog(loginFrame, "Your account not found", "Login Failed", JOptionPane.WARNING_MESSAGE);
 
+        this.user = user;
+
+        return user;
     }
 
     public void disposeFrame() {
@@ -51,6 +54,10 @@ public class LoginController {
 
     public boolean isLogin() {
         return isLogin;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public static void main(String[] args) {

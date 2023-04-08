@@ -24,6 +24,7 @@ public class MouseInputController implements MouseListener, MouseMotionListener 
     public Point getLocationClicked() {
         return this.locationClicked;
     }
+
     public Point getLocationMoving() {
         return this.locationMoving;
     }
@@ -66,5 +67,10 @@ public class MouseInputController implements MouseListener, MouseMotionListener 
         locationMoving.y = e.getY();
 
         System.out.println(locationMoving.x + " " + locationMoving.y);
+    }
+
+    public MouseInputController setClicked(boolean b) {
+        isClicked = b;
+        return this;
     }
 }

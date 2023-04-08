@@ -15,7 +15,8 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 public class GButton extends Entity {
-
+    public static Font fontButton = new Font("Roboto", Font.BOLD, 20);
+    final static private BufferedImage BTN_IMAGE01 = ImageReader.Read(Path.of("GameUI", "button01.png").toString());
     public BufferedImage _normalImage;
     public BufferedImage _clickedImage;
 
@@ -24,12 +25,8 @@ public class GButton extends Entity {
     private MouseInputController mouseInputController;
     private Color backgroundColor = new Color(220, 50, 50), textColor = Color.WHITE;
     private Color backgroundOverlayColor = null;
-    private int delay = 50;
-
     private boolean isPressed = false;
-
-    final static private BufferedImage BTN_IMAGE01 = ImageReader.Read(Path.of("GameUI", "button01.png").toString());
-    private Font font;
+    private Font font = fontButton;
 
     public GButton(String content, GamePanelController gamePanelController, MouseInputController mouseInputController) {
         super();
@@ -62,7 +59,7 @@ public class GButton extends Entity {
 
     public GButton(String content, int screenWidth, int screenHeight, GamePanelController gamePanelController, MouseInputController mouseInputController) {
         super();
-        Dimension strSize1 = GString.getStringSize((Graphics2D) gamePanelController.getGraphics(), "PLAY", new Font("Roboto", Font.PLAIN, 15));
+        Dimension strSize1 = GString.getStringSize((Graphics2D) gamePanelController.getGraphics(), "PLAY", fontButton);
         Dimension btnSize1 = new Dimension(strSize1.width + 70, strSize1.height + 30);
 
         _content = content;
@@ -74,7 +71,7 @@ public class GButton extends Entity {
         this.gamePanelController = gamePanelController;
         this.mouseInputController = mouseInputController;
 
-        this.setFont(new Font("Roboto", Font.PLAIN, 15));
+        this.setFont(fontButton);
         this.setName(content);
     }
 
@@ -117,10 +114,10 @@ public class GButton extends Entity {
             //draw content.
             if (g2d.getColor() != Color.white)
                 g2d.setColor(Color.white);
-            if (g2d.getFont() != font)
-                g2d.setFont(font);
+            if (g2d.getFont() != fontButton)
+                g2d.setFont(fontButton);
 
-            GString.drawCenteredString(g2d, _content, new Rectangle(_x, _y, _width, _height), font);
+            GString.drawCenteredString(g2d, _content, new Rectangle(_x, _y, _width, _height), fontButton);
         }
     }
 
@@ -152,8 +149,9 @@ public class GButton extends Entity {
         this.backgroundColor = color;
     }
 
-    public void setTextColor(Color color) {
+    public GButton setTextColor(Color color) {
         textColor = color;
+        return this;
     }
 
     public void setPressed(boolean b) {
@@ -162,5 +160,10 @@ public class GButton extends Entity {
 
     public void setFont(Font font) {
         this.font = font;
+    }
+
+    public GButton setContent(String content) {
+        _content = content;
+        return this;
     }
 }

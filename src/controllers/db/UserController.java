@@ -22,13 +22,21 @@ public class UserController {
         File db = new File(Path.of(path.toString(), "src", "config", "db", "accounts.txt").toString());
         try {
             Scanner scanner = new Scanner(db);
-            while (scanner.hasNextLine()) {
-                String data = scanner.nextLine();
-                String currentUsername = data.substring(0, data.indexOf(' ')).trim();
-                String currentPassword = data.substring(data.lastIndexOf(' ')).trim();
+            int n = 0;
+            if (scanner.hasNext())
+                n = Integer.parseInt(scanner.nextLine().trim());
+
+            for (int j = 0; j < n && scanner.hasNextLine(); j++) {
+
+                String[] data = (scanner.nextLine()).split(";");
+                String currentUsername = data[0].trim();
+                String currentPassword = data[1].trim();
+                int level = Integer.parseInt(data[2].trim());
+
                 if (currentUsername.equals(username) && currentPassword.equals(password))
-                    return new User(currentUsername, currentPassword);
+                    return new User(currentUsername, currentPassword, level);
             }
+
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

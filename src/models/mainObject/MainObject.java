@@ -20,7 +20,7 @@ import util.ImageReader;
 public class MainObject extends AbleMoveEntity {
     private int _heart = 3;
     private int delayAfterPutBomb = 30;
-    private int _numberOfBomb = 3;
+    private int _numberOfBomb = 1;
     private final Renderer _render;
     private Color _color = null;
 
@@ -150,7 +150,7 @@ public class MainObject extends AbleMoveEntity {
 
             canPutBoom = false;
 
-            GamePanelController.setTimeout(300, ()-> {
+            GamePanelController.setTimeout(300, () -> {
                 canPutBoom = true;
             });
         }

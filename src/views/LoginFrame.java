@@ -125,9 +125,6 @@ public class LoginFrame extends JFrame implements ActionListener {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
 
-            // Do login validation here
-            // For example, you could compare the entered username and password with a database of valid credentials
-            // If the login is successful, you could open a new window or do other actions
             loginController.login(username, password);
         }
     }

@@ -69,10 +69,10 @@ public abstract class AbleMoveEntity extends Entity {
                 y + (_height - gamePanelController.tileSize + 20) / 2,
                 gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
-        return !gamePanelController.detectTitle(rect.x / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
-                && !gamePanelController.detectTitle((rect.x + rect.width) / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
-                && !gamePanelController.detectTitle(rect.x / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize)
-                && !gamePanelController.detectTitle((rect.x + rect.width) / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize);
+        return !gamePanelController.detectAllTitles(rect.x / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
+                && !gamePanelController.detectAllTitles((rect.x + rect.width) / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
+                && !gamePanelController.detectAllTitles(rect.x / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize)
+                && !gamePanelController.detectAllTitles((rect.x + rect.width) / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize);
     }
 
     @Override

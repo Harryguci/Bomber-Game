@@ -17,17 +17,19 @@ public class Main implements Runnable {
     }
 
     public void update() {
+
         System.out.print("");
         if (loginController.isLogin()) {
-            gameFrame = new GameFrame("BOMB GAME");
+
+            gameFrame = new GameFrame("BOMB GAME", loginController.getUser());
             loginController.disposeFrame();
-            loginThread = null;
+            loginThread.interrupt();
         }
     }
 
     @Override
     public void run() {
-        while (loginThread != null) {
+        while (!loginThread.isInterrupted()) {
             update();
         }
     }

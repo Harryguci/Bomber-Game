@@ -1,5 +1,6 @@
 package models.gui;
 
+import bin.Render;
 import views.Renderer;
 import java.nio.file.Path;
 
@@ -12,5 +13,5 @@ public class Sprite {
 
     final public static Renderer LOWTILE_01 = new Renderer(16, 16, Path.of("tiles", "tilemap_packed.png").toString());
     final public static Renderer PAUSE_BTN = new Renderer(112, 112, Path.of("background", "pauseButton.png").toString());
-
+    final public static Renderer ICONS = new Renderer(103, 102, Path.of("GameUI", "icons.png").toString());
 }

@@ -1,3 +1,7 @@
-user1 123456
-user3 123456
-admin 123456
+4
+user1;123456;0
+user3;123456;1
+admin;123456;2
+admin2;123456;2
+
+Note: username;password;level
