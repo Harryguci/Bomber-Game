@@ -71,8 +71,6 @@ public class GamePanelController extends JPanel implements Runnable {
     private final List<BufferedImage> tiles = new ArrayList<>();
     private final List<BufferedImage> backgroundImage = new ArrayList<>();  // store background images
     private final Map<String, GButton> buttonMap = new HashMap<>(); // store buttons
-
-    private final CustomButton demoButton = new CustomButton("CLICK", this);
     private final Map<String, BufferedImage> guiImages = new HashMap<>();
     private Font customFont;
     private int _animate = 0, numberScores = 0, gameLevel = 0, numberOfThreat = 100;

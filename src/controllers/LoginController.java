@@ -7,7 +7,7 @@ import models.db.User;
 import javax.swing.JOptionPane;
 
 public class LoginController {
-    private LoginFrame loginFrame;
+    private final LoginFrame loginFrame;
     private String username = "", password = "";
     private boolean isLogin = false;
     private User user;
@@ -21,8 +21,8 @@ public class LoginController {
         // - Have length greater or equal than 3
         // - Have character and least 1 number but dont start with a number.
 
-        boolean checkPassword = password.length() >= 6 && password.matches("^[a-zA-Z0-9]+$");
-        boolean checkUsername = username.length() >= 3 && username.matches("^(?=.*[0-9])(?!\\d).*[a-zA-Z0-9]+$");
+        boolean checkPassword = (password.length() >= 6) && password.matches("^[a-zA-Z0-9]+$");
+        boolean checkUsername = (username.length() >= 3) && username.matches("^(?=.*[0-9])(?!\\d).*[a-zA-Z0-9]+$");
 
         return checkUsername && checkPassword;
     }

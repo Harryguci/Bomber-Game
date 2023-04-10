@@ -18,7 +18,6 @@ public class Main implements Runnable {
 
     public void update() {
 
-        System.out.print("");
         if (loginController.isLogin()) {
 
             gameFrame = new GameFrame("BOMB GAME", loginController.getUser());
