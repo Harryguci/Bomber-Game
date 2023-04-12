@@ -1,5 +1,6 @@
 package controllers;
 
+import bin.TestButtonEvent;
 import config.db.Config;
 import models.AbleMoveEntity;
 import models.BackgroundType;
@@ -16,13 +17,7 @@ import models.tiles.TileKind;
 import util.MyFunction;
 
 import javax.swing.*;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
@@ -32,11 +27,8 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
 public class GamePanelController extends JPanel implements Runnable {
     private final User user;
@@ -47,7 +39,7 @@ public class GamePanelController extends JPanel implements Runnable {
 
     private final byte FPS = 60;
     private final int originalTitleSize = 16;
-    private int scale = 3;
+    private int scale = 4;
     public int tileSize = scale * originalTitleSize;
     private final int maxScreenCol = 20;
     private final int maxScreenRow = 10;
@@ -75,8 +67,15 @@ public class GamePanelController extends JPanel implements Runnable {
     private Font customFont;
     private int _animate = 0, numberScores = 0, gameLevel = 0, numberOfThreat = 100;
 
+    // TEST
+    private final Map<String, MainButton> _buttons = new HashMap<>();
+
     public GamePanelController(User user) {
+        setLayout(null);
+        setLocation(0, 0);
+
         this.user = user;
+
         initScreen();   // init information for game screen
         installFont(Path.of("font", "LilitaOne-Regular.ttf").toString());   // Get Font
         initGUIGame(); // init gui images
@@ -181,6 +180,37 @@ public class GamePanelController extends JPanel implements Runnable {
         buttonMap.put("PAUSE_BTN", pauseBtn);
         buttonMap.put("MENU_BTN", menuBtn);
         buttonMap.put("LANG_BTN", langBtn);
+
+
+        MainButton playButton = new MainButton("PLAY", (screenWidth - 200) / 2, screenHeight / 2 - 100, 200, TestButtonEvent.DEFAULT_ICON, this, gamePanelController -> {
+            setTimeout(300, () -> {
+                gamePanelController.statusGame = StatusGame.PLAYING;
+            });
+        });
+        playButton.setVisible(false);
+
+        MainButton tutorialButton = new MainButton("TUTORIAL", (screenWidth - 200) / 2, screenHeight / 2, 200, TestButtonEvent.DEFAULT_ICON, this, gamePanelController -> {
+            setTimeout(300, () -> {
+                gamePanelController.statusGame = StatusGame.GAME_TUTORIAL;
+            });
+        });
+        tutorialButton.setVisible(false);
+
+        MainButton langButton = new MainButton(_language, screenWidth - 100, 30, 100, TestButtonEvent.DEFAULT_ICON, this, gamePanelController -> {
+            setTimeout(300, () -> {
+                gamePanelController._language = gamePanelController._language.equals("ENG") ? "VN" : "ENG";
+                gamePanelController.setContentButton(gamePanelController._language);
+            });
+        });
+        langButton.setVisible(false);
+
+        _buttons.put("PLAY", playButton);
+        _buttons.put("TUTORIAL", tutorialButton);
+        _buttons.put("LANG", langButton);
+
+        add(_buttons.get("PLAY"));
+        add(_buttons.get("TUTORIAL"));
+        add(_buttons.put("LANG", langButton));
     }
 
     public void setContentButton(String lang) {
@@ -188,17 +218,15 @@ public class GamePanelController extends JPanel implements Runnable {
         if (lang.equals("VN")) {
             GButton.fontButton = new Font("Arial", Font.BOLD, 20 * scale / 4);
 
-            buttonMap.get("PLAY").setContent("CHƠI");
-            buttonMap.get("TUTORIAL").setContent("HƯỚNG DẪN");
-            buttonMap.get("Continue").setContent("Tiếp tục");
-            buttonMap.get("LANG_BTN").setContent(lang);
+            _buttons.get("PLAY").setText("CHƠI");
+            _buttons.get("TUTORIAL").setText("HƯỚNG DẪN");
+            _buttons.get("LANG").setText(lang);
         } else {
             GButton.fontButton = customFont.deriveFont(20f);
 
-            buttonMap.get("PLAY").setContent("PLAY");
-            buttonMap.get("TUTORIAL").setContent("TUTORIAL");
-            buttonMap.get("Continue").setContent("Continue");
-            buttonMap.get("LANG_BTN").setContent(lang);
+            _buttons.get("PLAY").setText("PLAY");
+            _buttons.get("TUTORIAL").setText("TUTORIAL");
+            _buttons.get("LANG").setText(lang);
         }
     }
 
@@ -224,6 +252,7 @@ public class GamePanelController extends JPanel implements Runnable {
         viewportHeight = screenHeight; // viewport height default set equals the window's height.
 
         setPreferredSize(new Dimension(screenWidth, screenHeight));
+        setSize(new Dimension(screenWidth, screenHeight));
     }
 
     public void createOneThreat(int cl, int r) {
@@ -395,6 +424,8 @@ public class GamePanelController extends JPanel implements Runnable {
 
     // [Update method]
     public void update() {
+        updateButton();
+
         switch (statusGame) {
             case START -> updateStartGame();
             case PLAYING -> updatePlayingGame();
@@ -410,6 +441,12 @@ public class GamePanelController extends JPanel implements Runnable {
             }
             default -> System.out.println("ERROR with status game: " + statusGame);
         }
+    }
+
+    public void updateButton() {
+        _buttons.forEach((String key, MainButton button) -> {
+            _buttons.get(key).setVisible(false);
+        });
     }
 
     public static void setTimeout(int delayMilliseconds, MyFunction f) {
@@ -488,6 +525,9 @@ public class GamePanelController extends JPanel implements Runnable {
         } catch (NullPointerException e) {
             System.out.println("[LANG_BTN] is NULL");
         }
+
+        _buttons.get("PLAY").setVisible(true);
+        _buttons.get("TUTORIAL").setVisible(true);
     }
 
     public void updatePlayingGame() {
@@ -680,7 +720,12 @@ public class GamePanelController extends JPanel implements Runnable {
         int w = 350;
         g2d.fillRect(screenWidth - w, screenHeight - 50, w, 50);
         g2d.setColor(Color.WHITE);
-        g2d.drawString("USERNAME: " + user.getUsername() + " | MAX SCORES: " + user.getMaxScore(), screenWidth - w + 20, screenHeight - 20);
+
+        try {
+            g2d.drawString("USERNAME: " + user.getUsername() + " | MAX SCORES: " + user.getMaxScore(), screenWidth - w + 20, screenHeight - 20);
+        } catch (Exception e) {
+            //
+        }
     }
 
     public void paintBackground(Graphics2D g2d) {
@@ -758,6 +803,7 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void paintStartScreen(Graphics2D g2d) {
+
         g2d.setColor(new Color(64, 64, 64));
         g2d.fillRect(0, 0, screenWidth, screenHeight);
         g2d.setColor(Color.WHITE);
@@ -769,14 +815,9 @@ public class GamePanelController extends JPanel implements Runnable {
         int menuWidth = (int) ((menuHeight * 1.0 / menuImageVertical.getHeight()) * menuImageVertical.getWidth());
         g2d.drawImage(menuImageVertical, (screenWidth - menuWidth) / 2, (screenHeight - menuHeight) / 2, menuWidth, menuHeight, this);
 
-        try {
-            buttonMap.get("PLAY").draw(g2d);
-            buttonMap.get("TUTORIAL").draw(g2d);
-            buttonMap.get("LANG_BTN").draw(g2d);
-        } catch (NullPointerException e) {
-            initButton();
-            System.out.println("ERROR drawing button");
-        }
+        if (_buttons.get("PLAY") != null) _buttons.get("PLAY").setVisible(true);
+        if (_buttons.get("LANG") != null) _buttons.get("LANG").setVisible(true);
+        if (_buttons.get("TUTORIAL") != null) _buttons.get("TUTORIAL").setVisible(true);
     }
 
     public void paintGameTutorial(Graphics2D g2d) {
@@ -890,6 +931,10 @@ public class GamePanelController extends JPanel implements Runnable {
     // End of [Paint screen method]
 
     // [GETTER & SETTER]
+
+    public void removeButton(Component component) {
+        this.remove(component);
+    }
 
     public boolean detectHardTile(int cl, int r) {
         try {

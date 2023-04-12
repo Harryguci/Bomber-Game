@@ -16,6 +16,7 @@ public class GameFrame extends JFrame implements WindowListener {
 
     public GameFrame(String title) {
         super(title);
+
         this.gamePanelController = new GamePanelController(user);
         this.add(gamePanelController, BorderLayout.CENTER);
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);

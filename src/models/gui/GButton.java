@@ -1,16 +1,19 @@
 package models.gui;
 
+import bin.TestButtonEvent;
 import models.Entity;
 
 import controllers.GamePanelController;
 import controllers.MouseInputController;
 import util.ImageReader;
 
+import javax.swing.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
@@ -166,4 +169,16 @@ public class GButton extends Entity {
         _content = content;
         return this;
     }
+
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if (e.getID() == MouseEvent.MOUSE_CLICKED) {
+            // Handle the mouse clicked event here
+            System.out.println("Button clicked!");
+        }
+
+        super.processMouseEvent(e);
+    }
+
 }
