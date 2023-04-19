@@ -10,8 +10,9 @@ import models.AbleMoveEntity;
 import models.Entity;
 import models.bomb.Bomb;
 import models.bomb.Explosion;
+import models.tiles.Item;
 import views.Renderer;
-import models.gui.Sprite;
+import models.Sprite;
 import models.threat.Zombie;
 import controllers.GamePanelController;
 import controllers.KeyInputController;
@@ -24,7 +25,9 @@ public class MainObject extends AbleMoveEntity {
     private final Renderer _render;
     private Color _color = null;
 
-    private boolean canPutBoom = true, canHurt = true;
+    private int _lengthBomb = 1;
+
+    private boolean canPutBoom = true, canHurt = true, canGetItem = true;
 
     public MainObject(GamePanelController gamePanelController, KeyInputController keyInputController) {
         super(gamePanelController, keyInputController);
@@ -57,17 +60,16 @@ public class MainObject extends AbleMoveEntity {
             _y = 0;
     }
 
-    @Override
-    public void move() {
+    public Entity detectCollidedEntity() {
         Rectangle rect = new Rectangle(_x + (_width - gamePanelController.tileSize + 20) / 2,
                 _y + (_height - gamePanelController.tileSize + 20) / 2,
                 gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
 
-        Entity e = gamePanelController.detectEntity(rect);
+        return gamePanelController.detectEntity(rect);
+    }
 
-        if (e instanceof Bomb && !((Bomb) e).getDirection().equals("ACTION"))
-            while (delayAfterPutBomb < 6) delayAfterPutBomb++;
-
+    @Override
+    public void move() {
         isMove = true;
         if (keyInputController.isPressed("up")) {
             if (canMove(_x, _y - _speedY)) {
@@ -89,6 +91,8 @@ public class MainObject extends AbleMoveEntity {
             }
         } else
             isMove = false; // the player is not moving
+
+        handleMove();
     }
 
 
@@ -125,16 +129,22 @@ public class MainObject extends AbleMoveEntity {
 
     @Override
     public void update() {
-        if (direction != Direction.DIED) {
-            move();
-            handleMove();
-            super.animate();
-            putBomb();
-            delayAfterPutBomb--;
-            if (delayAfterPutBomb < -9000) delayAfterPutBomb = -1;
-        } else {
-            // do nothing
-        }
+        super.animate();
+        if (direction == Direction.DIED) return;
+
+        Entity e = detectCollidedEntity();
+        if (e instanceof Bomb && !((Bomb) e).getDirection().equals("ACTION")
+                && delayAfterPutBomb < 6)
+            delayAfterPutBomb = 6;
+
+        if (e instanceof Item)
+            getItem((Item) e);
+
+        move();
+        putBomb();
+
+        delayAfterPutBomb--;
+        if (delayAfterPutBomb < -9000) delayAfterPutBomb = -1;
     }
 
     public void putBomb() {
@@ -142,7 +152,7 @@ public class MainObject extends AbleMoveEntity {
             int bombX = (_x + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
             int bombY = (_y + gamePanelController.tileSize / 2) / gamePanelController.tileSize * gamePanelController.tileSize;
 
-            gamePanelController.addEntity(new Bomb(bombX, bombY, _width, _height, gamePanelController));
+            gamePanelController.addEntity(new Bomb(bombX, bombY, _width, _height, _lengthBomb, gamePanelController));
             keyInputController.setReleased(KeyEvent.VK_SPACE);
 
             _numberOfBomb--;
@@ -175,6 +185,8 @@ public class MainObject extends AbleMoveEntity {
         _x = _y = _width = _height = gamePanelController.tileSize;
         _color = null;
         _numberOfBomb = 1;
+        _lengthBomb = 1;
+        _heart = 3;
     }
 
     public void setAlive() {
@@ -226,6 +238,24 @@ public class MainObject extends AbleMoveEntity {
         return false;
     }
 
+    public void getItem(Item e) {
+        if (!canGetItem) return;
+
+        int d = e.getItem();
+        switch (d) {
+            case 0 -> _numberOfBomb++;
+            case 1 -> _lengthBomb++;
+            case 2 -> _heart = Math.min(_heart + 1, 3);
+            case 3 -> gamePanelController.setScores(gamePanelController.getScores() + 10);
+        }
+        canGetItem = false;
+
+        GamePanelController.setTimeout(500, () -> {
+            canGetItem = true;
+        });
+    }
+
+
     public boolean canMove(int x, int y) {
 
         Rectangle rect = new Rectangle(x + (_width - gamePanelController.tileSize + 20) / 2,
@@ -249,4 +279,5 @@ public class MainObject extends AbleMoveEntity {
     public void setHeart(int h) {
         _heart = h;
     }
+
 }

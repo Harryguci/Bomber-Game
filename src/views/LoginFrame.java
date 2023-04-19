@@ -12,10 +12,13 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LoginFrame extends JFrame implements ActionListener {
+public class LoginFrame extends JFrame implements KeyListener {
     private JLabel usernameLabel, passwordLabel;
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -24,12 +27,12 @@ public class LoginFrame extends JFrame implements ActionListener {
 
     private int width = 550, height = 420;
 
-    public LoginFrame(LoginController loginController) {
+    private ActionListener loginHandle;
+
+    public LoginFrame(ActionListener loginHandle) {
         // Set frame properties
         Color backgroundColor = new Color(70, 70, 70);
         Color textColor = Color.WHITE;
-
-        this.loginController = loginController;
 
         setTitle("BOMBER GAME | Login");
         setSize(width, height);
@@ -87,8 +90,8 @@ public class LoginFrame extends JFrame implements ActionListener {
         heading.setFont(new Font("Roboto", Font.BOLD, 33));
         heading.setHorizontalAlignment(SwingConstants.LEFT);
         heading.setForeground(new Color(150, 150, 255));
-        heading.setSize(550,50);
-        heading.setLocation(width/2 - 110, 30);
+        heading.setSize(550, 50);
+        heading.setLocation(width / 2 - 110, 30);
 
         // Add components to frame
         add(heading);
@@ -107,7 +110,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 
         formPanel.setLocation(25, 110);
         // Add action listener to login button
-        loginButton.addActionListener(this);
+        loginButton.addActionListener(loginHandle);
         cancelButton.addActionListener(e -> dispose());
         formPanel.setBackground(backgroundColor);
         add(formPanel);
@@ -120,12 +123,31 @@ public class LoginFrame extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == loginButton) {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+    public JButton getLoginButton() {
+        return loginButton;
+    }
 
-            loginController.login(username, password);
-        }
+    public JTextField getUsernameField() {
+        return usernameField;
+    }
+
+    public JPasswordField getPasswordField() {
+        return passwordField;
+    }
+
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        System.out.println("ENTER");
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }

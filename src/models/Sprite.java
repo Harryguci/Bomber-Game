@@ -1,4 +1,4 @@
-package models.gui;
+package models;
 
 import bin.Render;
 import views.Renderer;
@@ -14,4 +14,7 @@ public class Sprite {
     final public static Renderer LOWTILE_01 = new Renderer(16, 16, Path.of("tiles", "tilemap_packed.png").toString());
     final public static Renderer PAUSE_BTN = new Renderer(112, 112, Path.of("background", "pauseButton.png").toString());
     final public static Renderer ICONS = new Renderer(103, 102, Path.of("GameUI", "icons.png").toString());
+
+    final public static Renderer ITEMS = new Renderer(106, 106, Path.of("tiles", "items.png").toString());
+    final public static Renderer TILE_SET02 = new Renderer(100, 100, Path.of("tiles", "tileSet.png").toString());
 }

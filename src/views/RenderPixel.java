@@ -5,6 +5,7 @@ import util.ImageReader;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 
 public class RenderPixel {
     private BufferedImage spriteSheet;
@@ -16,6 +17,7 @@ public class RenderPixel {
     private int sizeOne;
 
     public static RenderPixel TILES16 = new RenderPixel(ImageReader.Read("tiles\\tilemap_packed.png"), 4);
+    public static RenderPixel TILES16_01 = new RenderPixel(ImageReader.Read(Path.of("tiles", "tilemap_packed_2.png").toString()), 4);
     public static RenderPixel TILES16_02 = new RenderPixel(ImageReader.Read("tiles\\Overworld.png"), 4);
 
     public RenderPixel(BufferedImage spriteSheet, int scale) {
@@ -57,7 +59,9 @@ public class RenderPixel {
                     for (int j = 0; j < scale; j++) {
                         int px = x * scale + i;
                         int py = y * scale + j;
-                        enlargedSpriteSheet.setRGB(px, py, color.getRGB());
+
+                        if (color.getRGB() == Color.WHITE.getRGB()) enlargedSpriteSheet.setRGB(px, py, 0);
+                        else enlargedSpriteSheet.setRGB(px, py, color.getRGB());
                     }
                 }
             }

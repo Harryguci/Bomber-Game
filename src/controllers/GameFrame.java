@@ -1,12 +1,15 @@
 package controllers;
 
 import config.db.Config;
+
 import models.db.User;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
@@ -34,6 +37,7 @@ public class GameFrame extends JFrame implements WindowListener {
 
     public GameFrame(String title, User user) {
         super(title);
+
         this.user = user;
         this.gamePanelController = new GamePanelController(user);
         this.add(gamePanelController, BorderLayout.CENTER);
@@ -56,7 +60,9 @@ public class GameFrame extends JFrame implements WindowListener {
 
     private void confirmExit() {
         int confirmed = JOptionPane.showConfirmDialog(this,
-                "<html><h2>Are you sure you want to exit the program?</h2></html>",
+                "<html>" +
+                        "<h2>Are you sure you want to exit the program?</h2>" +
+                        "</html>",
                 "Confirm Exit",
                 JOptionPane.YES_NO_OPTION);
 

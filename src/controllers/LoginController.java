@@ -5,6 +5,13 @@ import controllers.db.UserController;
 import models.db.User;
 
 import javax.swing.JOptionPane;
+import javax.swing.text.Keymap;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 
 public class LoginController {
     private final LoginFrame loginFrame;
@@ -13,7 +20,18 @@ public class LoginController {
     private User user;
 
     public LoginController() {
-        loginFrame = new LoginFrame(this);
+        loginFrame = new LoginFrame(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == loginFrame.getLoginButton()) {
+                    String username = loginFrame.getUsernameField().getText();
+                    String password = new String(loginFrame.getPasswordField().getPassword());
+
+                    login(username, password);
+                }
+            }
+        });
+
     }
 
     public boolean validate(String username, String password) {
@@ -29,7 +47,7 @@ public class LoginController {
 
     public User login(String username, String password) {
         if (!validate(username, password)) {
-            JOptionPane.showMessageDialog(loginFrame, "Your information is wrong format", "Login Failed", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(loginFrame, "<html><h2>Your information is wrong format</h2></html>", "Login Failed", JOptionPane.WARNING_MESSAGE);
             return null;
         }
 
@@ -38,10 +56,11 @@ public class LoginController {
             this.username = user.getUsername();
             this.password = user.getPassword();
 
-            JOptionPane.showMessageDialog(loginFrame, "<html><h2>WELCOME BACK</h2><p>USERNAME: " + user.getUsername() + "</p><p>PASSWORD: " + user.getPassword() + "</p><p>LEVEL: " + user.getLevel() + "</p><br><html>", "Login Successfully", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(loginFrame, "<html><h1>WELCOME BACK</h1><ul><li>USERNAME: " + user.getUsername() + "</li><li>PASSWORD: " + user.getPassword() + "</li>" +
+                    "<li>LEVEL: " + user.getLevel() + "</li></ul><html>", "Login Successfully", JOptionPane.INFORMATION_MESSAGE);
             isLogin = true;
         } else
-            JOptionPane.showMessageDialog(loginFrame, "Your account not found", "Login Failed", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(loginFrame, "<html><h2>Your account not found</h2></html>", "Login Failed", JOptionPane.WARNING_MESSAGE);
 
         this.user = user;
 

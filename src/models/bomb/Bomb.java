@@ -2,7 +2,7 @@ package models.bomb;
 
 import models.Entity;
 import views.Renderer;
-import models.gui.Sprite;
+import models.Sprite;
 import controllers.GamePanelController;
 
 import java.awt.Graphics2D;

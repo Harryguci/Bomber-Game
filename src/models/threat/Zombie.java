@@ -2,10 +2,9 @@ package models.threat;
 
 import models.AbleMoveEntity;
 import models.Entity;
-import models.bomb.Bomb;
 import models.bomb.Explosion;
 import views.Renderer;
-import models.gui.Sprite;
+import models.Sprite;
 import controllers.GamePanelController;
 import controllers.KeyInputController;
 
