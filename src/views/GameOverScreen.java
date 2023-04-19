@@ -19,9 +19,12 @@ public class GameOverScreen extends ScreenPanel {
 
         g2d.setColor(new Color(255, 255, 255, 150));
 
-//        g2d.drawString("PRESS 'S' to PLAY again", getWidth() / 2 - 100, getHeight() - 100);
         GString.drawCenteredString(g2d, "PRESS 'S' to PLAY again",
                 new Rectangle(getWidth() / 2 - 100, getHeight() - 100, 200, 50),
                 new Font("Roboto", Font.PLAIN, 15));
+
+        g2d.setColor(new Color(250, 50, 50));
+        GString.drawCenteredString(g2d, "GAME OVER", new Rectangle(0, 50, getWidth(), 150),
+                new Font("Roboto", Font.BOLD, 55));
     }
 }

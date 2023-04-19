@@ -658,15 +658,15 @@ public class GamePanelController extends JPanel implements Runnable {
         int maxRow = viewportHeight / tileSize;
 
         // Map tat den
-        int d = 4;
+        int d = 8;
         for (int r = 0; r < maxRow * d; r++) {
             for (int cl = 0; cl < maxCol * d; cl++) {
 
-                if (cl > 1 && (cl + 1) * tileSize / 4 < xOffset || (cl - 1) * tileSize / 4 - xOffset > screenWidth)
+                if (cl > 1 && (cl + 1) * tileSize / d < xOffset || (cl - 1) * tileSize / d - xOffset > screenWidth)
                     continue;
 
-                if (Math.abs(cl * tileSize / d - player1.getX()) <= tileSize * 2
-                        && Math.abs(r * tileSize / d - player1.getY()) <= tileSize * 2)
+                if (Math.abs(cl * tileSize / d - player1.getX()) <= tileSize * 3
+                        && Math.abs(r * tileSize / d - player1.getY()) <= tileSize * 3)
                     continue;
 
                 g2d.setColor(Color.BLACK);
