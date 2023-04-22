@@ -1,27 +1,34 @@
-package controllers;
+package models;
 
 import config.db.Config;
 
+import controllers.GameMenuController;
+import controllers.GamePanelController;
 import models.db.User;
+import views.GameMenu;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 public class GameFrame extends JFrame implements WindowListener {
     private User user = null;
     private final GamePanelController gamePanelController;
+    private final GameMenu gameMenu = new GameMenu();
+    private GameMenuController gameMenuController;
 
     public GameFrame(String title) {
         super(title);
 
         this.gamePanelController = new GamePanelController(user);
         this.add(gamePanelController, BorderLayout.CENTER);
+        gameMenuController = new GameMenuController(gameMenu, gamePanelController);
+        this.add(gameMenu, BorderLayout.NORTH);
+
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
@@ -41,6 +48,9 @@ public class GameFrame extends JFrame implements WindowListener {
         this.user = user;
         this.gamePanelController = new GamePanelController(user);
         this.add(gamePanelController, BorderLayout.CENTER);
+        gameMenuController = new GameMenuController(gameMenu, gamePanelController);
+        this.add(gameMenu, BorderLayout.NORTH);
+
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
@@ -60,9 +70,7 @@ public class GameFrame extends JFrame implements WindowListener {
 
     private void confirmExit() {
         int confirmed = JOptionPane.showConfirmDialog(this,
-                "<html>" +
-                        "<h2>Are you sure you want to exit the program?</h2>" +
-                        "</html>",
+                "<html><h2>Do you sure you want to exit?</h2></html>",
                 "Confirm Exit",
                 JOptionPane.YES_NO_OPTION);
 

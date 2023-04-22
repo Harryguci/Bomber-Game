@@ -6,7 +6,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 
-import models.AbleMoveEntity;
+import models.MovableEntity;
 import models.Entity;
 import models.bomb.Bomb;
 import models.bomb.Explosion;
@@ -18,7 +18,7 @@ import controllers.GamePanelController;
 import controllers.KeyInputController;
 import util.ImageReader;
 
-public class MainObject extends AbleMoveEntity {
+public class MainObject extends MovableEntity {
     private int _heart = 3;
     private int delayAfterPutBomb = 30;
     private int _numberOfBomb = 1;
@@ -106,7 +106,7 @@ public class MainObject extends AbleMoveEntity {
             _render.render(g2d, imgLocation.x, imgLocation.y, _x, _y, gamePanelController.getXOffset(), false);
 
         if (_color != null) {
-            if (_animate % 6 < 2) _color = new Color(255, 0, 0, 100);
+            if (Math.abs(_animate % 6) < 2) _color = new Color(255, 0, 0, 100);
             else
                 _color = new Color(255, 100, 100, 100);
 
@@ -166,18 +166,8 @@ public class MainObject extends AbleMoveEntity {
         }
     }
 
-    public void updateCollideRect() {
-        setCollideRect(new Rectangle(_x - gamePanelController.getXOffset() + (_width - gamePanelController.tileSize + 20) / 2,
-                _y - gamePanelController.getYOffset() + (_height - gamePanelController.tileSize + 20) / 2,
-                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20));
-    }
-
     public void setNumberOfBomb(int n) {
         this._numberOfBomb = n;
-    }
-
-    public int get_numberOfBomb() {
-        return _numberOfBomb;
     }
 
     public void setDefault() {

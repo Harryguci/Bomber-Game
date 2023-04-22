@@ -1,6 +1,6 @@
 package models.threat;
 
-import models.AbleMoveEntity;
+import models.MovableEntity;
 import models.Entity;
 import models.bomb.Explosion;
 import views.Renderer;
@@ -13,14 +13,14 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
-public class Zombie extends AbleMoveEntity {
-    private Renderer renderer = Sprite.ZOMBIE_01;
-    private int delay = 0, hurtDelay = 0, countDown = 50;
+public class Zombie extends MovableEntity {
+    private final Renderer renderer = Sprite.ZOMBIE_01;
+    private int delay = 0, countDown = 50;
 
     private int _heart = 3;
     private int maxHeart = 3;
     private float scale = 0.18f;
-
+    private boolean canHurt = true;
 
     public Zombie(int x, int y, GamePanelController gamePanelController, KeyInputController keyInputController) {
         super(gamePanelController, keyInputController);
@@ -147,6 +147,8 @@ public class Zombie extends AbleMoveEntity {
 
     @Override
     public void update() {
+        super.animate();
+
         if (countDown > 0) {
             countDown--;
             return;
@@ -154,21 +156,16 @@ public class Zombie extends AbleMoveEntity {
         _animate--;
         if (_animate < -9000)
             _animate = 9001;
-        if (hurtDelay > 0)
-            hurtDelay--;
 
         if (direction != Direction.DIED) {
             move();
             handleBombed();
-        } else {
-            delay--;
-            if (delay <= 0) {
-                _alive = false; // reminder for Manager to remove this object.
-            }
         }
     }
 
     public void handleBombed() {
+        if (!canHurt) return;
+
         Rectangle rect = new Rectangle(_x + (_width - gamePanelController.tileSize + 20) / 2,
                 _y + (_height - gamePanelController.tileSize + 20) / 2,
                 gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
@@ -176,13 +173,15 @@ public class Zombie extends AbleMoveEntity {
         Entity e = gamePanelController.detectEntity(rect, this);
 
         if (e instanceof Explosion) {
-            if (hurtDelay <= 0) {
-                _heart--;
-                hurtDelay = 30;
-            }
+            _heart--;
+            canHurt = false;
+            GamePanelController.setTimeout(1000, () -> canHurt = true);
+
             if (_heart <= 0) {
                 direction = Direction.DIED;
-                delay = 30;
+                GamePanelController.setTimeout(1000, () -> {
+                    _alive = false;
+                });
             }
         }
     }

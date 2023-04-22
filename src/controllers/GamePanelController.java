@@ -1,24 +1,22 @@
 package controllers;
 
 import config.db.Config;
-import models.AbleMoveEntity;
-import models.BackgroundType;
+import models.MovableEntity;
 import models.Entity;
 import models.Sprite;
 import models.bomb.Bomb;
 import models.bomb.Explosion;
 import models.db.User;
-import models.gui.*;
+import models.gui.GString;
 import models.mainObject.MainObject;
 import models.tiles.Item;
 import models.tiles.LowTile16bit;
 import models.threat.Zombie;
 
-import models.tiles.TileKind;
-import org.w3c.dom.css.Rect;
 import util.MyFunction;
 import views.GuiImage;
 import views.ScreenFactory;
+import views.ScreenPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,13 +30,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 import java.util.*;
-import java.util.List;
 
 public class GamePanelController extends JPanel implements Runnable {
     private final User user;
 
     public enum StatusGame {
-        START, PLAYING, PAUSE, GAME_OVER, TRANSITION, GAME_TUTORIAL, WIN_GAME,
+        START, SELECT_MAP, PLAYING, PAUSE, GAME_OVER, TRANSITION, GAME_TUTORIAL, WIN_GAME,
     }
 
     public final static byte FPS = 60;
@@ -59,7 +56,6 @@ public class GamePanelController extends JPanel implements Runnable {
     private boolean[][] _tileMap = new boolean[maxScreenRow][30];   // save the location matrix of tiles (walls) as a boolean matrix
     private final String[] _titleMapStr = new String[500];    // save the location matrix of tiles (walls) as a string matrix
     private final KeyInputController keyInputController; // manages keyboard event
-    private final MouseInputController mouseInputController; // manages mouse event
     private final ArrayList<BufferedImage> backgroundImage = new ArrayList<>();  // store background images
     private final ArrayList<BufferedImage> tiles = new ArrayList<>();
     private Vector<Entity> _entities = new Vector<>();
@@ -86,9 +82,7 @@ public class GamePanelController extends JPanel implements Runnable {
 
         // KEYBOARD & MOUSE
         keyInputController = new KeyInputController(this);
-        mouseInputController = new MouseInputController(this);
         addKeyListener(keyInputController);
-        addMouseListener(mouseInputController);
 
         // MAIN PLAYER
         player1 = new MainObject(this, keyInputController);
@@ -133,14 +127,14 @@ public class GamePanelController extends JPanel implements Runnable {
         _entities.clear();
         xOffset = yOffset = 0;
         player1.setHeart(3);
-        numberScores = 90;
+        numberScores = 0;
 
         setupMap();
         initThreat();
         getTileImage();
         initBackgroundImage();
 
-        System.out.println(gameLevel);
+//        System.out.println(gameLevel);
     }
 
 
@@ -200,12 +194,13 @@ public class GamePanelController extends JPanel implements Runnable {
             File myObj = new File(filePath);
             Scanner myReader = new Scanner(myObj);
             numberOfThreat = Integer.parseInt(myReader.nextLine().trim());
+
             System.out.println(numberOfThreat);
             for (int i = 0; i < numberOfThreat && myReader.hasNext(); i++) {
                 String temp = myReader.nextLine();
                 int r = Integer.parseInt(temp.substring(0, temp.lastIndexOf(' ')).trim());
                 int cl = Integer.parseInt(temp.substring(temp.lastIndexOf(' ')).trim());
-                System.out.println(r + " " + cl);
+                //    System.out.println(r + " " + cl);
                 createOneThreat(cl, r);
             }
 
@@ -245,13 +240,11 @@ public class GamePanelController extends JPanel implements Runnable {
         tiles.clear();
         switch (gameLevel) {
             case 0 -> {
-                System.out.println("added tile images for game level 1");
                 tiles.add(LowTile16bit.WALL_01.getImage());
                 tiles.add(LowTile16bit.WALL_02.getImage());
                 tiles.add(LowTile16bit.WALL_03.getImage());
             }
             case 1, 2 -> {
-                System.out.println("added tile images for game level 2");
                 tiles.add(Sprite.TILE_SET02.getSubimage(2, 2));
                 tiles.add(Sprite.TILE_SET02.getSubimage(2, 2));
                 tiles.add(Sprite.TILE_SET02.getSubimage(2, 2));
@@ -370,11 +363,16 @@ public class GamePanelController extends JPanel implements Runnable {
         clearPanel();
         switch (statusGame) {
             case START -> updateStartGame();
+            case SELECT_MAP -> updateSelectMap();
             case PLAYING -> updatePlayingGame();
             case PAUSE -> updatePauseGame();
             case TRANSITION -> updateTransitionGame();
             case GAME_TUTORIAL -> updateTutorialGame();
-            case WIN_GAME -> System.out.println("WIN GAME...");
+            case WIN_GAME -> {
+                if (keyInputController.isPressed(KeyEvent.VK_W)) {
+                    statusGame = StatusGame.START;
+                }
+            }
             case GAME_OVER -> {
                 if (keyInputController.isPressed(KeyEvent.VK_S)) {
                     if (user != null)
@@ -400,26 +398,32 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void updateStartGame() {
-        remove(screenFactory.getTutorialScreen());
         add(screenFactory.getStartScreen());
-        screenFactory.getStartScreen().setVisible(true);
 
         // press 'S' to start game
         if (keyInputController.isPressed(KeyEvent.VK_S)) {
             setTimeout(300, () -> {
-                statusGame = StatusGame.PLAYING;
+                statusGame = StatusGame.SELECT_MAP;
             });
         }
     }
 
+    public void updateSelectMap() {
+        add(screenFactory.getSelectionMapScreen());
+    }
+
     public void updatePlayingGame() {
+        if (keyInputController.isPressed(KeyEvent.VK_ESCAPE)) {
+            statusGame = StatusGame.PAUSE;
+            return;
+        }
         // Next level
         if (keyInputController.isPressed(KeyEvent.VK_K) || numberOfThreat == 0) {
             statusGame = StatusGame.TRANSITION;
             gameLevel++;
-            if (gameLevel > 2) gameLevel = 0;
-            restartAtLevel(gameLevel);
-
+            if (gameLevel > 2) {
+                statusGame = StatusGame.WIN_GAME;
+            }
             return;
         }
 
@@ -442,7 +446,7 @@ public class GamePanelController extends JPanel implements Runnable {
                 _entities.remove(e);
                 i--;
 
-            } else if (e instanceof AbleMoveEntity && !((AbleMoveEntity) e).isAlive()) {
+            } else if (e instanceof MovableEntity && !((MovableEntity) e).isAlive()) {
                 if (e instanceof Zombie) {
                     numberScores += 10;
                     numberOfThreat--;
@@ -479,7 +483,9 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     public void updatePauseGame() {
-
+        if (keyInputController.isPressed(KeyEvent.VK_F)) {
+            statusGame = StatusGame.PLAYING;
+        }
     }
 
     public void updateTutorialGame() {
@@ -510,10 +516,6 @@ public class GamePanelController extends JPanel implements Runnable {
                 item.setxOffset(xOffset);
             }
         }
-//
-//        for (Entity item : _entities) {
-//            if (item instanceof Item) ((Item) item).setxOffset(xOffset);
-//        }
     }
     // END OF [Update method]
 
@@ -528,12 +530,25 @@ public class GamePanelController extends JPanel implements Runnable {
 
         switch (statusGame) {
             case START -> paintStartScreen(g2d);
+            case SELECT_MAP -> {
+                g2d.setColor(Color.WHITE);
+                GString.drawCenteredString(g2d, "SELECT MAP", new Rectangle(0, 0, screenWidth, 200), customFont.deriveFont(Font.BOLD, 40f));
+            }
             case PLAYING -> paintGamePlaying(g2d);
             case PAUSE -> paintPauseGame(g2d);
             case GAME_OVER -> paintOverScreen(g2d);
             case TRANSITION -> paintTransitionScreen(g2d);
             case GAME_TUTORIAL -> paintGameTutorial(g2d);
-            case WIN_GAME -> System.out.println("WIN GAME...");
+            case WIN_GAME -> {
+                g2d.setColor(new Color(200, 60, 60));
+                g2d.fillRect(0, 0, screenWidth, screenHeight);
+                g2d.setColor(Color.YELLOW);
+                GString.drawCenteredString(g2d, "WIN GAME", new Rectangle(0, 0, screenWidth, screenHeight / 2), customFont.deriveFont(Font.BOLD, 100f));
+                GString.drawCenteredString(g2d, "SCORES: " + numberScores, new Rectangle(0, 200, screenWidth, screenHeight / 2), customFont.deriveFont(30f));
+
+                g2d.setColor(new Color(0, 0, 0, 150));
+                GString.drawCenteredString(g2d, "Press 'W' to Play again...", new Rectangle(0, screenHeight / 2, screenWidth, screenHeight / 2), customFont.deriveFont(12f));
+            }
             default -> System.out.println("ERROR with status game: " + statusGame);
         }
 
@@ -542,10 +557,15 @@ public class GamePanelController extends JPanel implements Runnable {
 
     public void clearPanel() {
         try {
+//            ScreenPanel[] panels = screenFactory.getAll();
+//            for (ScreenPanel panel : panels) {
+//                remove(panel);
+//            }
             remove(screenFactory.getStartScreen());
             remove(screenFactory.getTutorialScreen());
             remove(screenFactory.getGameOverScreen());
             remove(screenFactory.getTransitionScreen());
+            remove(screenFactory.getSelectionMapScreen());
         } catch (Exception ex) {
             System.out.println("Can not clear Panels");
         }
@@ -572,7 +592,7 @@ public class GamePanelController extends JPanel implements Runnable {
             }
 
         g2d.setColor(new Color(0, 0, 0, 120));
-        g2d.fillRoundRect(40 * player1.getHeart() + 30, 20, 230, 40, 20, 20);
+        g2d.fillRoundRect(40 * player1.getHeart() + 30, 20, 370, 40, 20, 20);
 
         g2d.setFont(customFont.deriveFont(Font.PLAIN, 20f));
         g2d.setColor(Color.WHITE);
@@ -580,25 +600,25 @@ public class GamePanelController extends JPanel implements Runnable {
         String scoreString = "" + numberScores;
         while (scoreString.length() < 3) scoreString = "0" + scoreString;
 
-        g2d.drawString("Score:  " + scoreString + "   | Bomb:  " + player1.getNumberOfBomb(), 40 * player1.getHeart() + 40, 45);
+        g2d.drawString("Scores:  " + scoreString + "   | Bombs:  " + player1.getNumberOfBomb() + "    |Threads:   " + numberOfThreat, 40 * player1.getHeart() + 40, 45);
 
         g2d.setColor(new Color(0, 0, 0, 150));
 
-        int w = 350;
+        int w = 400;
         g2d.fillRect(screenWidth - w, screenHeight - 50, w, 50);
         g2d.setColor(Color.WHITE);
 
         try {
-            g2d.drawString("USERNAME: " + user.getUsername() + " | MAX SCORES: " + user.getMaxScore(), screenWidth - w + 20, screenHeight - 20);
+            g2d.drawString("USERNAME: " + user.getUsername() + "     | MAX SCORES: " + user.getMaxScore(), screenWidth - w + 20, screenHeight - 20);
         } catch (Exception e) {
             // System.out.println("USER IS NULL");
         }
 
         g2d.setColor(new Color(0, 0, 0, 120));
-        g2d.fillRoundRect(screenWidth - 100, 0, 100, 70, 20, 20);
+        g2d.fillRoundRect(screenWidth - 110, 20, 100, 50, 20, 20);
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Roboto", Font.BOLD, 15));
-        g2d.drawString("LEVEL: " + gameLevel, screenWidth - 70, 50);
+        g2d.drawString("LEVEL: " + (gameLevel + 1), screenWidth - 90, 50);
     }
 
     public void paintBackground(Graphics2D g2d) {
@@ -622,7 +642,7 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
 
-    public void paintMap(Graphics2D g2d) {
+    public void paintTiles(Graphics2D g2d) {
         int maxCol = viewportWidth / tileSize;
         int maxRow = viewportHeight / tileSize;
 
@@ -665,11 +685,25 @@ public class GamePanelController extends JPanel implements Runnable {
                 if (cl > 1 && (cl + 1) * tileSize / d < xOffset || (cl - 1) * tileSize / d - xOffset > screenWidth)
                     continue;
 
-                if (Math.abs(cl * tileSize / d - player1.getX()) <= tileSize * 3
-                        && Math.abs(r * tileSize / d - player1.getY()) <= tileSize * 3)
+                int x1 = Math.abs(cl * tileSize / d - player1.getX());
+                int y1 = Math.abs(r * tileSize / d - player1.getY());
+                double dis = Math.sqrt(x1 * x1 + y1 * y1);
+
+                if (dis < tileSize * 2)
                     continue;
 
-                g2d.setColor(Color.BLACK);
+                Color fillColor = Color.BLACK;
+
+
+                for (float i = 2; i <= 4; i += 0.1) {
+
+                    if (dis <= tileSize * i) {
+                        fillColor = new Color(0, 0, 0, (int) ((i - 1) * 1.0 / 3 * 200));
+                        break;
+                    }
+                }
+
+                g2d.setColor(fillColor);
                 g2d.fillRect(cl * tileSize / d - xOffset, r * tileSize / d, tileSize / d, tileSize / d);
             }
         }
@@ -690,19 +724,19 @@ public class GamePanelController extends JPanel implements Runnable {
                 x.draw(g2d);
         }
 
-        paintMap(g2d);
+        paintTiles(g2d);
 
         player1.draw(g2d);
         paintInformation(g2d);
     }
 
     public void paintPauseGame(Graphics2D g2d) {
-        g2d.drawImage(GuiImage.backgroundGradient, 0, 0, screenWidth, screenHeight, this);
-        BufferedImage menuImageVertical = GuiImage.menuVertical;
+        g2d.setColor(new Color(50, 50, 150));
+        g2d.fillRect(0, 0, screenWidth, screenHeight);
 
-        int temp = screenHeight - 150;
-        Dimension menuSize = new Dimension((int) ((temp * 1.0 / menuImageVertical.getHeight()) * menuImageVertical.getWidth()), screenHeight - 150);
-        g2d.drawImage(menuImageVertical, (screenWidth - menuSize.width) / 2, (screenHeight - menuSize.height) / 2, menuSize.width, menuSize.height, this);
+        g2d.setColor(Color.WHITE);
+        GString.drawCenteredString(g2d, "Press 'F' to continue..",
+                new Rectangle(0, 0, screenWidth, screenHeight), customFont.deriveFont(Font.BOLD, 30f));
     }
 
     public void paintTransitionScreen(Graphics2D g2d) {
@@ -872,12 +906,24 @@ public class GamePanelController extends JPanel implements Runnable {
         return scale;
     }
 
+    public int getNumberOfThreat() {
+        return numberOfThreat;
+    }
+
     public int getScores() {
         return numberScores;
     }
 
     public int getLevel() {
         return gameLevel;
+    }
+
+    public Vector<Entity> getEntities() {
+        return _entities;
+    }
+
+    public KeyInputController getKeyInputController() {
+        return keyInputController;
     }
 
     public void setScale(int sc) {

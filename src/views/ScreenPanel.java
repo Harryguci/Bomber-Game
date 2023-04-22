@@ -37,6 +37,7 @@ public abstract class ScreenPanel extends JPanel {
                         case "TUTORIAL" -> ((JButton) component).setText("HƯỚNG DẪN");
                         case "BACK" -> ((JButton) component).setText("QUAY LẠI");
                         case "VN" -> ((JButton) component).setText("ENG");
+                        case "ABOUT" -> ((JButton) component).setText("VỀ C.Tôi");
                     }
                 }
             }
@@ -49,6 +50,7 @@ public abstract class ScreenPanel extends JPanel {
                         case "HƯỚNG DẪN" -> ((JButton) component).setText("TUTORIAL");
                         case "QUAY LẠI" -> ((JButton) component).setText("BACK");
                         case "ENG" -> ((JButton) component).setText("VN");
+                        case "VỀ C.Tôi" -> ((JButton) component).setText("ABOUT");
                     }
                 }
             }

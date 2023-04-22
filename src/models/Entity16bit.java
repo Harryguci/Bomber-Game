@@ -3,7 +3,7 @@ package models;
 import controllers.GamePanelController;
 import views.RenderPixel;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Entity16bit extends Entity {
@@ -45,5 +45,6 @@ public class Entity16bit extends Entity {
     }
 
     @Override
-    public void update() {}
+    public void update() {
+    }
 }

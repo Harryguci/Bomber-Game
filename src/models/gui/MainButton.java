@@ -1,10 +1,8 @@
 package models.gui;
 
 
-import com.sun.tools.javac.Main;
 import controllers.GamePanelController;
 import util.ImageReader;
-import util.MouseClickedFunc;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +14,7 @@ public class MainButton extends JButton {
 
     public static BufferedImage DEFAULT_ICON = ImageReader.Read(Path.of("GameUI", "button01.png").toString());
     private BufferedImage backgroundImage, defaultImage, clickedImage;
+    private Color overlay = null;
 
     public MainButton(String content, int x, int y, int width) {
         int height = (int) (width * 0.4);
@@ -119,6 +118,10 @@ public class MainButton extends JButton {
         if (event.getID() == MouseEvent.MOUSE_CLICKED) {
             backgroundImage = clickedImage;
             GamePanelController.setTimeout(300, () -> backgroundImage = defaultImage);
+        } else if (event.getID() == MouseEvent.MOUSE_ENTERED) {
+            setForeground(Color.ORANGE);
+        } else if (event.getID() == MouseEvent.MOUSE_EXITED) {
+            setForeground(Color.WHITE);
         }
         super.processMouseEvent(event);
     }

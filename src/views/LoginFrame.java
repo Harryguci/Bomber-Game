@@ -23,11 +23,8 @@ public class LoginFrame extends JFrame implements KeyListener {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton, cancelButton;
-    private LoginController loginController;
 
     private int width = 550, height = 420;
-
-    private ActionListener loginHandle;
 
     public LoginFrame(ActionListener loginHandle) {
         // Set frame properties

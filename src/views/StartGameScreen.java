@@ -1,5 +1,7 @@
 package views;
 
+import models.gui.GString;
+
 import javax.swing.JComponent;
 import java.awt.*;
 
@@ -24,7 +26,6 @@ public class StartGameScreen extends ScreenPanel {
 
         g2d.setColor(new Color(64, 64, 64));
         g2d.fillRect(0, 0, getWidth(), getHeight());
-
 
         g2d.drawImage(backgroundGradient, 0, 0, getWidth(), getHeight(), this);
 

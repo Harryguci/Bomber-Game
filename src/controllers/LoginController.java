@@ -15,7 +15,6 @@ import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
 
 public class LoginController {
     private final LoginFrame loginFrame;
-    private String username = "", password = "";
     private boolean isLogin = false;
     private User user;
 
@@ -53,8 +52,8 @@ public class LoginController {
 
         User user = UserController.findOne(username, password);
         if (user != null) {
-            this.username = user.getUsername();
-            this.password = user.getPassword();
+            String username1 = user.getUsername();
+            String password1 = user.getPassword();
 
             JOptionPane.showMessageDialog(loginFrame, "<html><h1>WELCOME BACK</h1><ul><li>USERNAME: " + user.getUsername() + "</li><li>PASSWORD: " + user.getPassword() + "</li>" +
                     "<li>LEVEL: " + user.getLevel() + "</li></ul><html>", "Login Successfully", JOptionPane.INFORMATION_MESSAGE);

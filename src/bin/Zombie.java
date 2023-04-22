@@ -1,13 +1,13 @@
 package bin;
 
-import models.AbleMoveEntity;
+import models.MovableEntity;
 import views.Renderer;
 import controllers.GamePanelController;
 import controllers.KeyInputController;
 
 import java.awt.Graphics2D;
 
-public class Zombie extends AbleMoveEntity {
+public class Zombie extends MovableEntity {
 
     Renderer renderer = new Renderer(148, 181, "zombies\\walk.png");
     private int countDown = 100;

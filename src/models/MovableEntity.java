@@ -5,7 +5,7 @@ import controllers.KeyInputController;
 
 import java.awt.*;
 
-public abstract class AbleMoveEntity extends Entity {
+public abstract class MovableEntity extends Entity {
 
     protected enum Direction {
         DEFAULT, UP, DOWN, LEFT, RIGHT, DIED,
@@ -18,13 +18,10 @@ public abstract class AbleMoveEntity extends Entity {
     protected int _animate = 0;
     final protected int MAX_ANIMATED = 7500;
     protected boolean isMove = false;
-
     protected boolean _alive = true;
-    protected Rectangle _collideRect;
-
     protected int _speedX, _speedY;
 
-    public AbleMoveEntity(GamePanelController gamePanelController, KeyInputController keyInputController) {
+    public MovableEntity(GamePanelController gamePanelController, KeyInputController keyInputController) {
         super();
         this.gamePanelController = gamePanelController;
         this.keyInputController = keyInputController;
@@ -34,7 +31,8 @@ public abstract class AbleMoveEntity extends Entity {
     // [GETTER & SETTER]
 
     public void animate() {
-        _animate = _animate > MAX_ANIMATED ? 0 : _animate + 1;
+        _animate--;
+        if (_animate < -MAX_ANIMATED) _animate = MAX_ANIMATED;
     }
 
     public void setSpeed(int speedX, int speedY) {
@@ -46,13 +44,12 @@ public abstract class AbleMoveEntity extends Entity {
         return _speedX;
     }
 
-    public void setCollideRect(Rectangle rect) {
-        _collideRect = rect;
-    }
     public String getDirection() {
         return direction.toString();
     }
-    public int getSpeedY() {
+
+    public int
+    getSpeedY() {
         return _speedY;
     }
 
