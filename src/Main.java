@@ -17,6 +17,8 @@ public class Main implements Runnable {
     }
 
     public void update() {
+        if (!loginController.isFrameVisible()) loginThread.interrupt(); // if login frame is disposed then end the program.
+
         if (loginController.isLogin()) {
             gameFrame = new GameFrame("BOMB GAME", loginController.getUser());
             loginController.disposeFrame();

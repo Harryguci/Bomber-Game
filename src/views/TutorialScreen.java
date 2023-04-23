@@ -1,15 +1,12 @@
 package views;
 
 
-import controllers.GamePanelController;
+import config.db.Config;
 import models.gui.GString;
-import models.gui.MainButtonFactory;
-import util.ImageReader;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.nio.file.Path;
 
 public class TutorialScreen extends ScreenPanel {
     private int scale = 3;
@@ -32,7 +29,7 @@ public class TutorialScreen extends ScreenPanel {
         int menuWidth = (int) (getWidth() * 0.7);
         String content, heading;
 
-        if (GamePanelController._language.equals("ENG")) {
+        if (Config._language.equals("ENG")) {
             heading = "GAME TUTORIAL";
             content = """
                     - USE [UP] [DOWN] [LEFT] [RIGHT] to move player

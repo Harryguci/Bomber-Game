@@ -3,7 +3,7 @@ package models;
 import config.db.Config;
 
 import controllers.GameMenuController;
-import controllers.GamePanelController;
+import controllers.GamePanel;
 import models.db.User;
 import views.GameMenu;
 
@@ -17,16 +17,16 @@ import java.awt.event.WindowListener;
 
 public class GameFrame extends JFrame implements WindowListener {
     private User user = null;
-    private final GamePanelController gamePanelController;
+    private final GamePanel gamePanel;
     private final GameMenu gameMenu = new GameMenu();
     private GameMenuController gameMenuController;
 
     public GameFrame(String title) {
         super(title);
 
-        this.gamePanelController = new GamePanelController(user);
-        this.add(gamePanelController, BorderLayout.CENTER);
-        gameMenuController = new GameMenuController(gameMenu, gamePanelController);
+        this.gamePanel = new GamePanel(user);
+        this.add(gamePanel, BorderLayout.CENTER);
+        gameMenuController = new GameMenuController(gameMenu, gamePanel);
         this.add(gameMenu, BorderLayout.NORTH);
 
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -37,8 +37,8 @@ public class GameFrame extends JFrame implements WindowListener {
 
         Dimension screenSize = Config.deviceScreenSize;
 
-        this.setLocation((screenSize.width - gamePanelController.getScreenWidth()) / 2,
-                (screenSize.height - gamePanelController.getScreenHeight()) / 2);
+        this.setLocation((screenSize.width - gamePanel.getScreenWidth()) / 2,
+                (screenSize.height - gamePanel.getScreenHeight()) / 2);
         this.setVisible(true);
     }
 
@@ -46,9 +46,9 @@ public class GameFrame extends JFrame implements WindowListener {
         super(title);
 
         this.user = user;
-        this.gamePanelController = new GamePanelController(user);
-        this.add(gamePanelController, BorderLayout.CENTER);
-        gameMenuController = new GameMenuController(gameMenu, gamePanelController);
+        this.gamePanel = new GamePanel(user);
+        this.add(gamePanel, BorderLayout.CENTER);
+        gameMenuController = new GameMenuController(gameMenu, gamePanel);
         this.add(gameMenu, BorderLayout.NORTH);
 
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -59,8 +59,8 @@ public class GameFrame extends JFrame implements WindowListener {
 
         Dimension screenSize = Config.deviceScreenSize;
 
-        this.setLocation((screenSize.width - gamePanelController.getScreenWidth()) / 2,
-                (screenSize.height - gamePanelController.getScreenHeight()) / 2);
+        this.setLocation((screenSize.width - gamePanel.getScreenWidth()) / 2,
+                (screenSize.height - gamePanel.getScreenHeight()) / 2);
         this.setVisible(true);
     }
 

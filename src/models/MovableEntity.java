@@ -1,6 +1,6 @@
 package models;
 
-import controllers.GamePanelController;
+import controllers.GamePanel;
 import controllers.KeyInputController;
 
 import java.awt.*;
@@ -13,7 +13,7 @@ public abstract class MovableEntity extends Entity {
 
     protected Direction direction = Direction.RIGHT;
 
-    protected GamePanelController gamePanelController;
+    protected GamePanel gamePanel;
     protected KeyInputController keyInputController;
     protected int _animate = 0;
     final protected int MAX_ANIMATED = 7500;
@@ -21,9 +21,9 @@ public abstract class MovableEntity extends Entity {
     protected boolean _alive = true;
     protected int _speedX, _speedY;
 
-    public MovableEntity(GamePanelController gamePanelController, KeyInputController keyInputController) {
+    public MovableEntity(GamePanel gamePanel, KeyInputController keyInputController) {
         super();
-        this.gamePanelController = gamePanelController;
+        this.gamePanel = gamePanel;
         this.keyInputController = keyInputController;
         this.isCollied = true;
     }
@@ -62,14 +62,14 @@ public abstract class MovableEntity extends Entity {
     public abstract void move();
 
     public boolean canMove(int x, int y) {
-        Rectangle rect = new Rectangle(x + (_width - gamePanelController.tileSize + 20) / 2,
-                y + (_height - gamePanelController.tileSize + 20) / 2,
-                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
+        Rectangle rect = new Rectangle(x + (_width - gamePanel.tileSize + 20) / 2,
+                y + (_height - gamePanel.tileSize + 20) / 2,
+                gamePanel.tileSize - 20, gamePanel.tileSize - 20);
 
-        return !gamePanelController.detectAllTitles(rect.x / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
-                && !gamePanelController.detectAllTitles((rect.x + rect.width) / gamePanelController.tileSize, rect.y / gamePanelController.tileSize)
-                && !gamePanelController.detectAllTitles(rect.x / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize)
-                && !gamePanelController.detectAllTitles((rect.x + rect.width) / gamePanelController.tileSize, (rect.y + rect.height) / gamePanelController.tileSize);
+        return !gamePanel.detectAllTitles(rect.x / gamePanel.tileSize, rect.y / gamePanel.tileSize)
+                && !gamePanel.detectAllTitles((rect.x + rect.width) / gamePanel.tileSize, rect.y / gamePanel.tileSize)
+                && !gamePanel.detectAllTitles(rect.x / gamePanel.tileSize, (rect.y + rect.height) / gamePanel.tileSize)
+                && !gamePanel.detectAllTitles((rect.x + rect.width) / gamePanel.tileSize, (rect.y + rect.height) / gamePanel.tileSize);
     }
 
     @Override

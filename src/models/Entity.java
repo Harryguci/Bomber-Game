@@ -10,6 +10,8 @@ public abstract class Entity extends JPanel {
     protected Rectangle colliedRect = new Rectangle();
     protected BufferedImage _image;
     protected int _animate = 0;
+    protected int _xOffset = 0;
+    protected int _yOffset = 0;
 
     public Entity() {
     }
@@ -107,4 +109,12 @@ public abstract class Entity extends JPanel {
     public abstract void draw(Graphics2D g2d);
 
     public abstract void update();
+
+    public void setXOffset(int xOffset) {
+        _xOffset = xOffset;
+    }
+
+    public void setYOffset(int yOffset) {
+        _yOffset = yOffset;
+    }
 }

@@ -1,7 +1,7 @@
 package models.gui;
 
 
-import controllers.GamePanelController;
+import util.GameThread;
 import util.ImageReader;
 
 import javax.swing.*;
@@ -117,7 +117,7 @@ public class MainButton extends JButton {
     protected void processMouseEvent(MouseEvent event) {
         if (event.getID() == MouseEvent.MOUSE_CLICKED) {
             backgroundImage = clickedImage;
-            GamePanelController.setTimeout(300, () -> backgroundImage = defaultImage);
+            GameThread.setTimeout(300, () -> backgroundImage = defaultImage);
         } else if (event.getID() == MouseEvent.MOUSE_ENTERED) {
             setForeground(Color.ORANGE);
         } else if (event.getID() == MouseEvent.MOUSE_EXITED) {

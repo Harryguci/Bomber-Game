@@ -1,13 +1,12 @@
 package models.gui;
 
-import bin.TestButtonEvent;
 import models.Entity;
 
-import controllers.GamePanelController;
+import controllers.GamePanel;
 import controllers.MouseInputController;
+import util.GameThread;
 import util.ImageReader;
 
-import javax.swing.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -24,18 +23,18 @@ public class GButton extends Entity {
     public BufferedImage _clickedImage;
 
     private String _content;
-    private GamePanelController gamePanelController;
+    private GamePanel gamePanel;
     private MouseInputController mouseInputController;
     private Color backgroundColor = new Color(220, 50, 50), textColor = Color.WHITE;
     private Color backgroundOverlayColor = null;
     private boolean isPressed = false;
     private Font font = fontButton;
 
-    public GButton(String content, GamePanelController gamePanelController, MouseInputController mouseInputController) {
+    public GButton(String content, GamePanel gamePanel, MouseInputController mouseInputController) {
         super();
         this._content = content;
         isCollied = false;
-        this.gamePanelController = gamePanelController;
+        this.gamePanel = gamePanel;
         this.mouseInputController = mouseInputController;
         this.setName(content);
 
@@ -43,7 +42,7 @@ public class GButton extends Entity {
         _clickedImage = BTN_IMAGE01.getSubimage(0, BTN_IMAGE01.getHeight() / 2, BTN_IMAGE01.getWidth(), BTN_IMAGE01.getHeight() / 2);
     }
 
-    public GButton(String content, int x, int y, int width, int height, GamePanelController gamePanelController, MouseInputController mouseInputController) {
+    public GButton(String content, int x, int y, int width, int height, GamePanel gamePanel, MouseInputController mouseInputController) {
         super();
         this._x = x;
         this._y = y;
@@ -51,7 +50,7 @@ public class GButton extends Entity {
         this._height = height;
         this._content = content;
         isCollied = false;
-        this.gamePanelController = gamePanelController;
+        this.gamePanel = gamePanel;
         this.mouseInputController = mouseInputController;
         this.setName(content);
 // default
@@ -60,9 +59,9 @@ public class GButton extends Entity {
         _clickedImage = BTN_IMAGE01.getSubimage(0, BTN_IMAGE01.getHeight() / 2, BTN_IMAGE01.getWidth(), BTN_IMAGE01.getHeight() / 2);
     }
 
-    public GButton(String content, int screenWidth, int screenHeight, GamePanelController gamePanelController, MouseInputController mouseInputController) {
+    public GButton(String content, int screenWidth, int screenHeight, GamePanel gamePanel, MouseInputController mouseInputController) {
         super();
-        Dimension strSize1 = GString.getStringSize((Graphics2D) gamePanelController.getGraphics(), "PLAY", fontButton);
+        Dimension strSize1 = GString.getStringSize((Graphics2D) gamePanel.getGraphics(), "PLAY", fontButton);
         Dimension btnSize1 = new Dimension(strSize1.width + 70, strSize1.height + 30);
 
         _content = content;
@@ -71,14 +70,14 @@ public class GButton extends Entity {
         _width = btnSize1.width;
         _height = btnSize1.height;
 
-        this.gamePanelController = gamePanelController;
+        this.gamePanel = gamePanel;
         this.mouseInputController = mouseInputController;
 
         this.setFont(fontButton);
         this.setName(content);
     }
 
-    public GButton(String content, int x, int y, int width, int height, BufferedImage normalImage, BufferedImage clickedImage, GamePanelController gamePanelController, MouseInputController mouseInputController) {
+    public GButton(String content, int x, int y, int width, int height, BufferedImage normalImage, BufferedImage clickedImage, GamePanel gamePanel, MouseInputController mouseInputController) {
         super();
         this._x = x;
         this._y = y;
@@ -86,7 +85,7 @@ public class GButton extends Entity {
         this._height = height;
         this._content = content;
         isCollied = false;
-        this.gamePanelController = gamePanelController;
+        this.gamePanel = gamePanel;
         this.mouseInputController = mouseInputController;
         this.setName(content);
 
@@ -137,7 +136,7 @@ public class GButton extends Entity {
 
             backgroundOverlayColor = new Color(0, 0, 0, 50);
 
-            GamePanelController.setTimeout(500, () -> {
+            GameThread.setTimeout(500, () -> {
                 backgroundOverlayColor = null;
                 setPressed(false);
             });

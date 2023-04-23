@@ -1,20 +1,18 @@
 package views;
 
-import com.sun.tools.javac.Main;
-import controllers.GamePanelController;
+import config.db.Config;
+import controllers.GamePanel;
+import models.db.User;
 import models.gui.GString;
 import models.gui.MainButton;
 import models.gui.MainButtonFactory;
+import util.GameThread;
 import util.ImageReader;
 import util.OpenURL;
 
 import javax.swing.*;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import javax.swing.border.StrokeBorder;
+import java.awt.*;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -25,10 +23,10 @@ import java.nio.file.Path;
 final public class ScreenFactory {
     private ScreenPanel startScreen, tutorialScreen, gameOverScreen, transitionScreen, selectionMapScreen, winGameScreen;
 
-    public ScreenFactory(GamePanelController gamePanelController) {
-        final MainButtonFactory btnFactory = new MainButtonFactory(gamePanelController);
-        final int screenWidth = gamePanelController.screenWidth;
-        final int screenHeight = gamePanelController.screenHeight;
+    public ScreenFactory(GamePanel gamePanel) {
+        final MainButtonFactory btnFactory = new MainButtonFactory(gamePanel);
+        final int screenWidth = gamePanel.screenWidth;
+        final int screenHeight = gamePanel.screenHeight;
 
         MainButton playBtn = btnFactory.getPlayBtn();
         MainButton tutorialBtn = btnFactory.getTutorialBtn();
@@ -43,11 +41,11 @@ final public class ScreenFactory {
         int mapButtonWidth = 200;
         int mapButtonHeight = 400;
 
-        MainButton map1 = new MainButton("Map 1", gamePanelController.screenWidth / 3 - mapButtonWidth / 2, screenHeight / 2 - mapButtonHeight / 2,
+        MainButton map1 = new MainButton("Map 1", gamePanel.screenWidth / 3 - mapButtonWidth / 2, screenHeight / 2 - mapButtonHeight / 2,
                 mapButtonWidth, mapButtonHeight, map1Image, map1Image);
-        MainButton map2 = new MainButton("Map 2", gamePanelController.screenWidth / 2 - mapButtonWidth / 2, screenHeight / 2 - mapButtonHeight / 2,
+        MainButton map2 = new MainButton("Map 2", gamePanel.screenWidth / 2 - mapButtonWidth / 2, screenHeight / 2 - mapButtonHeight / 2,
                 mapButtonWidth, mapButtonHeight, map2Image, map2Image);
-        MainButton map3 = new MainButton("Map 3", 2 * gamePanelController.screenWidth / 3 - mapButtonWidth / 2, screenHeight / 2 - mapButtonHeight / 2,
+        MainButton map3 = new MainButton("Map 3", 2 * gamePanel.screenWidth / 3 - mapButtonWidth / 2, screenHeight / 2 - mapButtonHeight / 2,
                 mapButtonWidth, mapButtonHeight, map3Image, map3Image);
 
         playBtn.setForeground(Color.WHITE);
@@ -60,24 +58,23 @@ final public class ScreenFactory {
         map2.setForeground(Color.WHITE);
         map3.setForeground(Color.WHITE);
 
-        playBtn.addActionListener(e -> GamePanelController.setTimeout(300, () -> {
-//                    gamePanelController.restartAtLevel(0);
-                    gamePanelController.statusGame = GamePanelController.StatusGame.SELECT_MAP;
+        playBtn.addActionListener(e -> GameThread.setTimeout(300, () -> {
+                    gamePanel.statusGame = GamePanel.StatusGame.SELECT_MAP;
                 }
         ));
 
-        tutorialBtn.addActionListener(e -> GamePanelController.setTimeout(300, () ->
-                gamePanelController.statusGame = GamePanelController.StatusGame.GAME_TUTORIAL));
+        tutorialBtn.addActionListener(e -> GameThread.setTimeout(300, () ->
+                gamePanel.statusGame = GamePanel.StatusGame.GAME_TUTORIAL));
 
-        langBtn.addActionListener(e -> gamePanelController.setLang(GamePanelController._language.equals("ENG") ? "VN" : "ENG"));
+        langBtn.addActionListener(e -> gamePanel.setLang(Config._language.equals("ENG") ? "VN" : "ENG"));
 
-        backBtn.addActionListener(e -> GamePanelController.setTimeout(300, ()
-                -> gamePanelController.statusGame = GamePanelController.StatusGame.START));
+        backBtn.addActionListener(e -> GameThread.setTimeout(300, ()
+                -> gamePanel.statusGame = GamePanel.StatusGame.START));
 
-        nextGameBtn.addActionListener(e -> GamePanelController.setTimeout(1000, ()
+        nextGameBtn.addActionListener(e -> GameThread.setTimeout(1000, ()
                 -> {
-            gamePanelController.statusGame = GamePanelController.StatusGame.PLAYING;
-            gamePanelController.restartAtLevel(gamePanelController.getLevel());
+            gamePanel.statusGame = GamePanel.StatusGame.PLAYING;
+            gamePanel.restartAtLevel(gamePanel.getLevel());
         }));
 
         try {
@@ -86,37 +83,79 @@ final public class ScreenFactory {
             throw new RuntimeException(e);
         }
 
+
+        User user = gamePanel.getUser();
+
         map1.addActionListener(e -> {
-            JOptionPane.showMessageDialog(gamePanelController, "Get start now..");
-            GamePanelController.setTimeout(500, () -> {
-                gamePanelController.restartAtLevel(0);
-                gamePanelController.statusGame = GamePanelController.StatusGame.PLAYING;
+            JOptionPane.showMessageDialog(gamePanel, "Get start now..");
+            GameThread.setTimeout(500, () -> {
+                gamePanel.restartAtLevel(0);
+                gamePanel.statusGame = GamePanel.StatusGame.PLAYING;
             });
         });
 
         map2.addActionListener(e -> {
-            JOptionPane.showMessageDialog(gamePanelController, "Get start now..");
-            GamePanelController.setTimeout(500, () -> {
-                gamePanelController.restartAtLevel(1);
-                gamePanelController.statusGame = GamePanelController.StatusGame.PLAYING;
-            });
+            if (user.getLevel() < 1)
+                JOptionPane.showMessageDialog(gamePanel, "Your current level is " + (user.getLevel() + 1) + ". This map is not unlock yet.");
+            else {
+                JOptionPane.showMessageDialog(gamePanel, "Get start now..");
+                GameThread.setTimeout(500, () -> {
+                    gamePanel.restartAtLevel(1);
+                    gamePanel.statusGame = GamePanel.StatusGame.PLAYING;
+                });
+            }
         });
         map3.addActionListener(e -> {
-            JOptionPane.showMessageDialog(gamePanelController, "Get start now..");
-
-            GamePanelController.setTimeout(500, () -> {
-                gamePanelController.restartAtLevel(2);
-                gamePanelController.statusGame = GamePanelController.StatusGame.PLAYING;
-            });
+            if (user.getLevel() < 1)
+                JOptionPane.showMessageDialog(gamePanel, "Your current level is " + (user.getLevel() + 1) + ". This map is not unlock yet.");
+            else {
+                JOptionPane.showMessageDialog(gamePanel, "Get start now..");
+                GameThread.setTimeout(500, () -> {
+                    gamePanel.restartAtLevel(2);
+                    gamePanel.statusGame = GamePanel.StatusGame.PLAYING;
+                });
+            }
         });
 
+        ScreenPanel userInfo = new ScreenPanel(250, 50) {
+            @Override
+            protected void paintComponent(Graphics g) {
+//                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                RenderingHints hints = new RenderingHints(
+                        RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON
+                );
+                g2d.setRenderingHints(hints);
+
+                if (user != null) {
+                    g2d.setColor(new Color(50, 50, 150));
+                    g2d.fillRoundRect(3, 3, this.getWidth() - 3, this.getHeight() - 3, 20, 20);
+
+                    g2d.setColor(Color.ORANGE);
+                    g2d.setStroke(new BasicStroke(5));
+
+                    g2d.drawRoundRect(0, 0, this.getWidth(), this.getHeight(), 20, 20);
+
+                    String str = "USER: " + user.getUsername() + "     | LEVEL: " + (user.getLevel() + 1);
+
+                    g2d.setColor(Color.WHITE);
+                    GString.drawCenteredString(g2d, str,
+                            new Rectangle(10, 10, this.getWidth() - 20, this.getHeight() - 20),
+                            new Font("Arial", Font.BOLD, 14));
+                }
+                g2d.dispose();
+            }
+        };
+        userInfo.setLocation(30, 30);
+        userInfo.setBackground(null);
+        userInfo.setOpaque(false);
 
         tutorialScreen = new TutorialScreen(screenWidth, screenHeight,
                 new JComponent[]{MainButton.clone(langBtn), MainButton.clone(backBtn)}
         );
 
         startScreen = new StartGameScreen(screenWidth, screenHeight,
-                new JComponent[]{playBtn, tutorialBtn, langBtn, aboutBtn}
+                new JComponent[]{playBtn, tutorialBtn, langBtn, aboutBtn, userInfo}
         );
 
         gameOverScreen = new GameOverScreen(screenWidth, screenHeight, new JComponent[]{
@@ -151,7 +190,7 @@ final public class ScreenFactory {
                 g2d.setColor(new Color(100, 100, 100));
                 GString.drawCenteredString(g2d, "DESIGN BY HUY, NGHIA, TRUC - IT3 UTC - 2022",
                         new Rectangle(0, screenHeight - 50, screenWidth, 50),
-                        gamePanelController.getFont().deriveFont(Font.PLAIN, 10));
+                        gamePanel.getFont().deriveFont(Font.PLAIN, 10));
             }
         };
 
@@ -187,9 +226,16 @@ final public class ScreenFactory {
                 tx2.rotate(0);
                 tx2.scale(1, 1);
                 g2d.setTransform(tx2);
+
+                g2d.setColor(Color.WHITE);
+                if (user.getLevel() < 2) {
+                    GString.drawCenteredString(g2d, "LOCKED", new Rectangle(map3.getX(), map3.getY() + map3.getHeight(), map3.getWidth(), 50), new Font("Arial", Font.PLAIN, 20));
+                }
+                if (user.getLevel() < 1) {
+                    GString.drawCenteredString(g2d, "LOCKED", new Rectangle(map2.getX(), map2.getY() + map2.getHeight(), map2.getWidth(), 50), new Font("Arial", Font.PLAIN, 20));
+                }
             }
         };
-
     }
 
     public void setLang(String lang) {

@@ -55,8 +55,11 @@ public class LoginController {
             String username1 = user.getUsername();
             String password1 = user.getPassword();
 
-            JOptionPane.showMessageDialog(loginFrame, "<html><h1>WELCOME BACK</h1><ul><li>USERNAME: " + user.getUsername() + "</li><li>PASSWORD: " + user.getPassword() + "</li>" +
-                    "<li>LEVEL: " + user.getLevel() + "</li></ul><html>", "Login Successfully", JOptionPane.INFORMATION_MESSAGE);
+            int level = user.getLevel() + 1;
+            String html = "<html><head><style>body { font-family: Arial; font-size: 12px; margin: 20px; background: none; border: none; text-align: center;}h1 { color: red; font-size: 20pt; font-weight: bold; text-align: left; }p { text-indent: 14px; }a { color: blue; text-decoration: none; }li {margin: 10px 0px; text-align: left; font-size: 12px;}</style></head><body><h1>WELCOME BACK</h1><ul><li>USERNAME: %s</li><li>PASSWORD: %s</li><li>LEVEL: %d</body></html>".formatted(user.getUsername(), user.getPassword(), level);
+
+            JOptionPane.showMessageDialog(loginFrame, html, "Login Successfully", JOptionPane.INFORMATION_MESSAGE);
+
             isLogin = true;
         } else
             JOptionPane.showMessageDialog(loginFrame, "<html><h2>Your account not found</h2></html>", "Login Failed", JOptionPane.WARNING_MESSAGE);
@@ -76,6 +79,10 @@ public class LoginController {
 
     public User getUser() {
         return user;
+    }
+
+    public boolean isFrameVisible() {
+        return loginFrame.isVisible();
     }
 
     public static void main(String[] args) {

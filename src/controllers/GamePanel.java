@@ -13,10 +13,9 @@ import models.tiles.Item;
 import models.tiles.LowTile16bit;
 import models.threat.Zombie;
 
-import util.MyFunction;
+import util.GameThread;
 import views.GuiImage;
 import views.ScreenFactory;
-import views.ScreenPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,14 +30,14 @@ import java.nio.file.Path;
 
 import java.util.*;
 
-public class GamePanelController extends JPanel implements Runnable {
+public class GamePanel extends JPanel implements Runnable {
     private final User user;
 
     public enum StatusGame {
         START, SELECT_MAP, PLAYING, PAUSE, GAME_OVER, TRANSITION, GAME_TUTORIAL, WIN_GAME,
     }
 
-    public final static byte FPS = 60;
+    public final static byte FPS = Config.FPS;
     private final int originalTitleSize = 16;
     private int scale = 4;
     public int tileSize = scale * originalTitleSize;
@@ -46,7 +45,6 @@ public class GamePanelController extends JPanel implements Runnable {
     private final int maxScreenRow = 10;
     public int screenWidth = tileSize * maxScreenCol;
     public int screenHeight = tileSize * maxScreenRow;
-    public static String _language = "ENG";
     private int viewportWidth = tileSize * 104; // viewport width default set 104 columns
     private int viewportHeight = screenHeight; // viewport height default set equals the window's height.
     private int xOffset = 0;    // x offset
@@ -68,7 +66,7 @@ public class GamePanelController extends JPanel implements Runnable {
     // TEST
     private ScreenFactory screenFactory;
 
-    public GamePanelController(User user) {
+    public GamePanel(User user) {
         setLayout(null);
         setLocation(0, 0);
 
@@ -89,7 +87,7 @@ public class GamePanelController extends JPanel implements Runnable {
         player1.setLocation(tileSize, tileSize);
 
         // Init buttons
-        initButton();
+        initScreenFactory();
 
         // Set up game objects dependent game level
         restartAtLevel(gameLevel);
@@ -131,7 +129,7 @@ public class GamePanelController extends JPanel implements Runnable {
 
         setupMap();
         initThreat();
-        getTileImage();
+        initTileImage();
         initBackgroundImage();
 
 //        System.out.println(gameLevel);
@@ -151,22 +149,19 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     // Init buttons
-    public void initButton() {
-//        mainButtonFactory = new MainButtonFactory(this);
+    public void initScreenFactory() {
         screenFactory = new ScreenFactory(this);
     }
 
     public void setLang(String lang) {
-        _language = lang;
+        Config._language = lang;
         screenFactory.setLang(lang);
     }
 
 
     public void initScreen() {
         int deviceScreenHeight = Config.deviceScreenSize.height;
-
-        scale = Math.min(scale * (int) (deviceScreenHeight / screenHeight), 4);
-        System.out.println(scale);
+        scale = Math.min(scale * (deviceScreenHeight / screenHeight), 4);
 
         tileSize = scale * originalTitleSize;
         screenWidth = tileSize * maxScreenCol;
@@ -236,7 +231,7 @@ public class GamePanelController extends JPanel implements Runnable {
         }
     }
 
-    public void getTileImage() {
+    public void initTileImage() {
         tiles.clear();
         switch (gameLevel) {
             case 0 -> {
@@ -386,23 +381,12 @@ public class GamePanelController extends JPanel implements Runnable {
         }
     }
 
-    public static void setTimeout(int delayMilliseconds, MyFunction f) {
-        new Thread(() -> {
-            try {
-                Thread.sleep(delayMilliseconds);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            f.apply();
-        }).start();
-    }
-
     public void updateStartGame() {
         add(screenFactory.getStartScreen());
 
         // press 'S' to start game
         if (keyInputController.isPressed(KeyEvent.VK_S)) {
-            setTimeout(300, () -> {
+            GameThread.setTimeout(300, () -> {
                 statusGame = StatusGame.SELECT_MAP;
             });
         }
@@ -430,7 +414,7 @@ public class GamePanelController extends JPanel implements Runnable {
         player1.update();
 
         if (player1.isDied()) {
-            setTimeout(1000, () -> {
+            GameThread.setTimeout(1000, () -> {
                 statusGame = StatusGame.GAME_OVER;
             });
 
@@ -521,6 +505,7 @@ public class GamePanelController extends JPanel implements Runnable {
 
 
     // [PAINT Screen method]
+    @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
         RenderingHints hints = new RenderingHints(
@@ -557,15 +542,21 @@ public class GamePanelController extends JPanel implements Runnable {
 
     public void clearPanel() {
         try {
-//            ScreenPanel[] panels = screenFactory.getAll();
-//            for (ScreenPanel panel : panels) {
-//                remove(panel);
-//            }
-            remove(screenFactory.getStartScreen());
-            remove(screenFactory.getTutorialScreen());
-            remove(screenFactory.getGameOverScreen());
-            remove(screenFactory.getTransitionScreen());
-            remove(screenFactory.getSelectionMapScreen());
+//            JPanel[] panels = screenFactory.getAll();
+//            for (JPanel panel : panels) remove(panel);
+
+//            remove(screenFactory.getStartScreen());
+//            remove(screenFactory.getTutorialScreen());
+//            remove(screenFactory.getGameOverScreen());
+//            remove(screenFactory.getTransitionScreen());
+//            remove(screenFactory.getSelectionMapScreen());
+//
+            for (Component component : this.getComponents()) {
+                if (component instanceof JPanel) {
+                    remove(component);
+                }
+            }
+
         } catch (Exception ex) {
             System.out.println("Can not clear Panels");
         }
@@ -751,10 +742,6 @@ public class GamePanelController extends JPanel implements Runnable {
 
     // [GETTER & SETTER]
 
-    public void removeButton(Component component) {
-        this.remove(component);
-    }
-
     public boolean detectHardTile(int cl, int r) {
         try {
             if (this._tileMap[r][cl])
@@ -796,7 +783,7 @@ public class GamePanelController extends JPanel implements Runnable {
                 rects.add(rect2);
             }
             for (int i = 0; i < rects.size(); i++) {
-                if (GamePanelController.isCollision(rect1, rects.get(i))) {
+                if (GamePanel.isCollision(rect1, rects.get(i))) {
                     return _entities.get(i);
                 }
             }
@@ -827,7 +814,7 @@ public class GamePanelController extends JPanel implements Runnable {
 
                 Rectangle rect2 = new Rectangle(e.getX(), e.getY(), e.getWidth(), e.getHeight());
 
-                if (GamePanelController.isCollision(rect1, rect2))
+                if (GamePanel.isCollision(rect1, rect2))
                     return e;
             }
         } catch (Exception ignored) {
@@ -859,6 +846,10 @@ public class GamePanelController extends JPanel implements Runnable {
     }
 
     // Get entity at (x, y)
+    public User getUser() {
+        return user;
+    }
+
     public Entity getEntityAtXY(int x, int y) {
         for (Entity e : _entities) {
             if (e.getX() <= x && e.getX() + e.getWidth() >= x &&
@@ -917,6 +908,7 @@ public class GamePanelController extends JPanel implements Runnable {
     public int getLevel() {
         return gameLevel;
     }
+
 
     public Vector<Entity> getEntities() {
         return _entities;

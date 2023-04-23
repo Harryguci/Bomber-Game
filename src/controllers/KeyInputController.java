@@ -5,13 +5,13 @@ import java.awt.event.KeyListener;
 
 public class KeyInputController implements KeyListener {
 
-    private GamePanelController gamePanelController;
+    private GamePanel gamePanel;
     private boolean isPressed = false;
 
     private final boolean[] key = new boolean[200];
 
-    public KeyInputController(GamePanelController gamePanelController) {
-        this.gamePanelController = gamePanelController;
+    public KeyInputController(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
     }
 
     public boolean isPressed() {

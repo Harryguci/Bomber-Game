@@ -45,9 +45,9 @@ public class LowTile16bit extends Entity16bit {
     }
 
     public void handleBombed() {
-        Rectangle rect = new Rectangle(_x, _y, gamePanelController.tileSize, gamePanelController.tileSize);
+        Rectangle rect = new Rectangle(_x, _y, gamePanel.tileSize, gamePanel.tileSize);
 
-        Entity e = gamePanelController.detectEntity(rect, this);
+        Entity e = gamePanel.detectEntity(rect, this);
         if (e instanceof Explosion) {
             _alive = false;
         }

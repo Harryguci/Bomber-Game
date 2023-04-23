@@ -1,6 +1,6 @@
 package models;
 
-import controllers.GamePanelController;
+import controllers.GamePanel;
 import views.RenderPixel;
 
 import java.awt.Graphics2D;
@@ -10,7 +10,7 @@ public class Entity16bit extends Entity {
     protected RenderPixel render;
     protected int cl, r;
     protected boolean _alive = true;
-    protected GamePanelController gamePanelController;
+    protected GamePanel gamePanel;
     protected BufferedImage image;
 
     public Entity16bit(Entity16bit tile) {
@@ -30,8 +30,8 @@ public class Entity16bit extends Entity {
         _height = image.getHeight();
     }
 
-    public void setGamePanel(GamePanelController gamePanelController) {
-        this.gamePanelController = gamePanelController;
+    public void setGamePanel(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
     }
 
     public boolean getAlive() {
@@ -40,8 +40,8 @@ public class Entity16bit extends Entity {
 
     @Override
     public void draw(Graphics2D g2d) {
-        if (gamePanelController != null)
-            g2d.drawImage(image, _x - gamePanelController.getXOffset(), _y - gamePanelController.getYOffset(), _width, _height, null);
+        if (gamePanel != null)
+            g2d.drawImage(image, _x - gamePanel.getXOffset(), _y - gamePanel.getYOffset(), _width, _height, null);
     }
 
     @Override

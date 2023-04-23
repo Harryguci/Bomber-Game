@@ -1,7 +1,6 @@
 package models.gui;
 
-import controllers.GamePanelController;
-import models.Entity;
+import controllers.GamePanel;
 import util.ImageReader;
 
 import javax.swing.ImageIcon;
@@ -30,8 +29,8 @@ public class CustomButton extends JPanel {
         imageIconClicked = new ImageIcon(temp.getSubimage(0, temp.getHeight() / 2, temp.getWidth(), temp.getHeight() / 2));
     }
 
-    public CustomButton(String content, GamePanelController gamePanelController) {
-        parentPanel = gamePanelController;
+    public CustomButton(String content, GamePanel gamePanel) {
+        parentPanel = gamePanel;
 
         imageIcon = imageIconDefault;
         this.content = content;

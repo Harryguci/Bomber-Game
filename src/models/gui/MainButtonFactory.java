@@ -1,22 +1,21 @@
 package models.gui;
 
-import controllers.GamePanelController;
+import config.db.Config;
+import controllers.GamePanel;
 import models.Sprite;
-
-import java.awt.*;
 
 public class MainButtonFactory {
     final private MainButton playBtn, tutorialBtn, langBtn, backStartBtn, pauseBtn, nextGameBtn;
 
-    public MainButtonFactory(GamePanelController gamePanelController) {
-        int screenWidth = gamePanelController.screenWidth;
-        int screenHeight = gamePanelController.screenHeight;
+    public MainButtonFactory(GamePanel gamePanel) {
+        int screenWidth = gamePanel.screenWidth;
+        int screenHeight = gamePanel.screenHeight;
 
-        playBtn = new MainButton("PLAY", (gamePanelController.screenWidth - 200) / 2, gamePanelController.screenHeight / 2 - 100, 200);
+        playBtn = new MainButton("PLAY", (gamePanel.screenWidth - 200) / 2, gamePanel.screenHeight / 2 - 100, 200);
 
         tutorialBtn = new MainButton("TUTORIAL", (screenWidth - 200) / 2, screenHeight / 2, 200);
 
-        langBtn = new MainButton(GamePanelController._language, screenWidth - 170, 30, 100);
+        langBtn = new MainButton(Config._language, screenWidth - 170, 30, 100);
 
         backStartBtn = new MainButton("BACK", (screenWidth - 200) / 2, screenHeight - 200, 200);
 

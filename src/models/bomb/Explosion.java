@@ -1,6 +1,6 @@
 package models.bomb;
 
-import controllers.GamePanelController;
+import controllers.GamePanel;
 import models.Entity;
 import models.Sprite;
 import views.Renderer;
@@ -8,7 +8,7 @@ import views.Renderer;
 import java.awt.*;
 
 public class Explosion extends Entity {
-    private GamePanelController gamePanelController;
+    private GamePanel gamePanel;
     private int timer = 30;
     private boolean _alive = true;
     private Renderer renderer = Sprite.BOMB_01;
@@ -20,13 +20,13 @@ public class Explosion extends Entity {
 
     private Status status = Status.ACTION;
 
-    public Explosion(int x, int y, GamePanelController gamePanelController) {
-        this.gamePanelController = gamePanelController;
+    public Explosion(int x, int y, GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
 
         _x = x;
         _y = y;
 
-        _width = _height = gamePanelController.tileSize;
+        _width = _height = gamePanel.tileSize;
     }
 
     @Override
@@ -36,9 +36,9 @@ public class Explosion extends Entity {
 
         int cl = Math.abs((timer - 30) % 30) / 5 + 2;
 
-        renderer.setScale((float) (1.7 * gamePanelController.getScale() * 1.0 / 3));
-        renderer.render(g2d, cl, 0, _x - 20, _y - 20, gamePanelController.getXOffset());
-        renderer.setScale((float) (gamePanelController.getScale() * 1.0 / 3));
+        renderer.setScale((float) (1.7 * gamePanel.getScale() * 1.0 / 3));
+        renderer.render(g2d, cl, 0, _x - 20, _y - 20, gamePanel.getXOffset());
+        renderer.setScale((float) (gamePanel.getScale() * 1.0 / 3));
     }
 
     @Override

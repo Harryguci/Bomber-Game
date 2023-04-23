@@ -4,26 +4,34 @@ import javax.swing.*;
 import java.awt.*;
 
 public class GameMenu extends JMenuBar {
-    JMenu start, tutorial, pause;
-    JMenuItem startItem, tutorialItem, pauseItem;
+    JMenu start, tutorial, pause, help;
+    JMenuItem startItem, tutorialItem, pauseItem, newGameỈtem, dialogHelpItem;
 
     public GameMenu() {
         super();
-        start = new JMenu("Start");
+        start = new JMenu("Game");
         tutorial = new JMenu("Tutorial");
         pause = new JMenu("Pause");
+        help = new JMenu("Help");
 
         startItem = new JMenuItem("Start screen");
         tutorialItem = new JMenuItem("Show Tutorial");
         pauseItem = new JMenuItem("Pause screen");
+        newGameỈtem = new JMenuItem("New Game");
+        dialogHelpItem = new JMenuItem("Dialog help");
 
         start.add(startItem);
+        start.add(newGameỈtem);
+
         tutorial.add(tutorialItem);
         pause.add(pauseItem);
+
+        help.add(dialogHelpItem);
 
         add(start);
         add(tutorial);
         add(pause);
+        add(help);
 
         setBackground(Color.WHITE);
     }
@@ -61,4 +69,11 @@ public class GameMenu extends JMenuBar {
         return this.pauseItem;
     }
 
+    public JMenuItem getNewGameỈtem() {
+        return newGameỈtem;
+    }
+
+    public JMenuItem getDialogHelpItem() {
+        return dialogHelpItem;
+    }
 }

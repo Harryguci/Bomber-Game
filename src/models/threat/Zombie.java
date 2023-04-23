@@ -3,9 +3,10 @@ package models.threat;
 import models.MovableEntity;
 import models.Entity;
 import models.bomb.Explosion;
+import util.GameThread;
 import views.Renderer;
 import models.Sprite;
-import controllers.GamePanelController;
+import controllers.GamePanel;
 import controllers.KeyInputController;
 
 import java.awt.BasicStroke;
@@ -22,15 +23,15 @@ public class Zombie extends MovableEntity {
     private float scale = 0.18f;
     private boolean canHurt = true;
 
-    public Zombie(int x, int y, GamePanelController gamePanelController, KeyInputController keyInputController) {
-        super(gamePanelController, keyInputController);
+    public Zombie(int x, int y, GamePanel gamePanel, KeyInputController keyInputController) {
+        super(gamePanel, keyInputController);
         _x = x;
         _y = y;
-        _width = _height = gamePanelController.tileSize;
+        _width = _height = gamePanel.tileSize;
         direction = Direction.LEFT;
-        setSpeed((int) Math.ceil(gamePanelController.getScale() * 1.0 / 3), (int) Math.ceil(gamePanelController.getScale() * 1.0 / 3));
+        setSpeed((int) Math.ceil(gamePanel.getScale() * 1.0 / 3), (int) Math.ceil(gamePanel.getScale() * 1.0 / 3));
 
-        scale *= gamePanelController.getScale() * 1.0 / 3;
+        scale *= gamePanel.getScale() * 1.0 / 3;
         renderer.setScale(scale);
     }
 
@@ -114,7 +115,7 @@ public class Zombie extends MovableEntity {
             return;
         }
         if (direction == Direction.DIED) {
-            renderer.render(g2d, 7, 0, _x - 10, _y, gamePanelController.getXOffset()); // render on screen
+            renderer.render(g2d, 7, 0, _x - 10, _y, gamePanel.getXOffset()); // render on screen
             return;
         }
 
@@ -127,15 +128,15 @@ public class Zombie extends MovableEntity {
         }
 
         if (direction == Direction.LEFT) {
-            renderer.render(g2d, d, 0, _x - 10, _y, gamePanelController.getXOffset()); // render on screen
+            renderer.render(g2d, d, 0, _x - 10, _y, gamePanel.getXOffset()); // render on screen
         } else {
-            renderer.render(g2d, d, 0, _x - 10, _y, gamePanelController.getXOffset(), false); // render on screen (FLIP IMAGE 180 deg on Horizontal)
+            renderer.render(g2d, d, 0, _x - 10, _y, gamePanel.getXOffset(), false); // render on screen (FLIP IMAGE 180 deg on Horizontal)
         }
 
         g2d.setColor(Color.RED);
         int rectW = (_width - 9) / 3;
         for (int i = 1; i <= maxHeart; i++) {
-            Rectangle temp = new Rectangle(_x - gamePanelController.getXOffset() + (rectW + 3) * (i - 1), _y - 10, rectW, 7);
+            Rectangle temp = new Rectangle(_x - gamePanel.getXOffset() + (rectW + 3) * (i - 1), _y - 10, rectW, 7);
             if (_heart >= i) {
                 g2d.fillRect(temp.x, temp.y, temp.width, temp.height);
             } else {
@@ -166,20 +167,20 @@ public class Zombie extends MovableEntity {
     public void handleBombed() {
         if (!canHurt) return;
 
-        Rectangle rect = new Rectangle(_x + (_width - gamePanelController.tileSize + 20) / 2,
-                _y + (_height - gamePanelController.tileSize + 20) / 2,
-                gamePanelController.tileSize - 20, gamePanelController.tileSize - 20);
+        Rectangle rect = new Rectangle(_x + (_width - gamePanel.tileSize + 20) / 2,
+                _y + (_height - gamePanel.tileSize + 20) / 2,
+                gamePanel.tileSize - 20, gamePanel.tileSize - 20);
 
-        Entity e = gamePanelController.detectEntity(rect, this);
+        Entity e = gamePanel.detectEntity(rect, this);
 
         if (e instanceof Explosion) {
             _heart--;
             canHurt = false;
-            GamePanelController.setTimeout(1000, () -> canHurt = true);
+            GameThread.setTimeout(1000, () -> canHurt = true);
 
             if (_heart <= 0) {
                 direction = Direction.DIED;
-                GamePanelController.setTimeout(1000, () -> {
+                GameThread.setTimeout(1000, () -> {
                     _alive = false;
                 });
             }

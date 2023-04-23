@@ -3,7 +3,7 @@ package models.tiles;
 import models.Entity;
 import views.Renderer;
 import models.Sprite;
-import controllers.GamePanelController;
+import controllers.GamePanel;
 
 import java.awt.*;
 
@@ -11,11 +11,11 @@ public class LowTile extends Entity {
     private Renderer render;
     private int spriteX, spriteY;
 
-    private GamePanelController gamePanelController;
+    private GamePanel gamePanel;
 
-    public LowTile(int x, int y, int spriteX, int spriteY, int spriteWidth, int spriteHeight, String pathSprite, GamePanelController gamePanelController) {
+    public LowTile(int x, int y, int spriteX, int spriteY, int spriteWidth, int spriteHeight, String pathSprite, GamePanel gamePanel) {
         isCollied = true;
-        this.gamePanelController = gamePanelController;
+        this.gamePanel = gamePanel;
         _x = x;
         _y = y;
 
@@ -23,11 +23,11 @@ public class LowTile extends Entity {
         this.spriteX = spriteX;
         this.spriteY = spriteY;
 
-        _width = _height = gamePanelController.tileSize;
+        _width = _height = gamePanel.tileSize;
     }
 
-    public LowTile(int x, int y, LowTileKind type, GamePanelController gamePanelController) {
-        this.gamePanelController = gamePanelController;
+    public LowTile(int x, int y, LowTileKind type, GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
 
         _x = x;
         _y = y;
@@ -48,14 +48,14 @@ public class LowTile extends Entity {
             }
         }
 
-        _width = _height = gamePanelController.tileSize;
+        _width = _height = gamePanel.tileSize;
         float s = (float)(_width / 16);
         render.setScale(s);
     }
 
     @Override
     public void draw(Graphics2D g2d) {
-        render.render(g2d, spriteX, spriteY, _x, _y, gamePanelController.getXOffset());
+        render.render(g2d, spriteX, spriteY, _x, _y, gamePanel.getXOffset());
     }
 
     @Override

@@ -11,10 +11,10 @@ public class MouseInputController implements MouseListener, MouseMotionListener 
     private boolean isClicked = false;
     private Point locationClicked = new Point(), locationMoving = new Point();
 
-    private GamePanelController gamePanelController;
+    private GamePanel gamePanel;
 
-    public MouseInputController(GamePanelController gamePanelController) {
-        this.gamePanelController = gamePanelController;
+    public MouseInputController(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
     }
 
     public boolean isClicked() {
