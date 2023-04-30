@@ -5,15 +5,16 @@ import config.db.Config;
 import controllers.GameMenuController;
 import controllers.GamePanel;
 import models.db.User;
+import util.ImageReader;
 import views.GameMenu;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.nio.file.Path;
 
 public class GameFrame extends JFrame implements WindowListener {
     private User user = null;
@@ -39,6 +40,15 @@ public class GameFrame extends JFrame implements WindowListener {
 
         this.setLocation((screenSize.width - gamePanel.getScreenWidth()) / 2,
                 (screenSize.height - gamePanel.getScreenHeight()) / 2);
+
+        try {
+            Image icon = (Image) ImageReader.Read(Path.of("bomb", "bomb1.png").toString());
+            setIconImage(icon);
+            if (icon == null) System.out.println("Image is null");
+        } catch (Exception err) {
+            System.out.println(err);
+        }
+
         this.setVisible(true);
     }
 

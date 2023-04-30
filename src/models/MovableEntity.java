@@ -48,8 +48,7 @@ public abstract class MovableEntity extends Entity {
         return direction.toString();
     }
 
-    public int
-    getSpeedY() {
+    public int getSpeedY() {
         return _speedY;
     }
 

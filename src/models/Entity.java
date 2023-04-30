@@ -7,9 +7,9 @@ import java.awt.image.BufferedImage;
 public abstract class Entity extends JPanel {
     protected int _x, _y, _width, _height;
     protected boolean isCollied = false;
-    protected Rectangle colliedRect = new Rectangle();
     protected BufferedImage _image;
     protected int _animate = 0;
+    protected int P = 0;
     protected int _xOffset = 0;
     protected int _yOffset = 0;
 
@@ -30,7 +30,6 @@ public abstract class Entity extends JPanel {
         _y = y;
         _width = width;
         _height = height;
-        colliedRect = new Rectangle(0, 0, _width, _height);
     }
 
     // [SETTER & GETTER]
@@ -50,10 +49,6 @@ public abstract class Entity extends JPanel {
     public void setSize(int width, int height) {
         _width = width;
         _height = height;
-    }
-
-    public void setColliedRect(Rectangle rect) {
-        colliedRect = rect;
     }
 
     public void setImage(BufferedImage image) {
@@ -90,16 +85,16 @@ public abstract class Entity extends JPanel {
     // END OF [SETTER & GETTER]
 
     // HANDLING METHOD
-    public Entity checkCollied(Entity other) {
-        Rectangle rect2 = other.colliedRect;
-
-        return (
-                colliedRect.x < rect2.x + rect2.width &&
-                        colliedRect.x + colliedRect.width > rect2.x &&
-                        colliedRect.y < rect2.y + rect2.height &&
-                        colliedRect.height + colliedRect.y > rect2.y
-        ) ? this : null;
-    }
+//    public Entity checkCollied(Entity other) {
+//        Rectangle rect2 = other.colliedRect;
+//
+//        return (
+//                colliedRect.x < rect2.x + rect2.width &&
+//                        colliedRect.x + colliedRect.width > rect2.x &&
+//                        colliedRect.y < rect2.y + rect2.height &&
+//                        colliedRect.height + colliedRect.y > rect2.y
+//        ) ? this : null;
+//    }
 
     protected void handleAnimate() {
         _animate--;
