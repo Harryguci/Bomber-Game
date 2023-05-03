@@ -84,18 +84,6 @@ public abstract class Entity extends JPanel {
     }
     // END OF [SETTER & GETTER]
 
-    // HANDLING METHOD
-//    public Entity checkCollied(Entity other) {
-//        Rectangle rect2 = other.colliedRect;
-//
-//        return (
-//                colliedRect.x < rect2.x + rect2.width &&
-//                        colliedRect.x + colliedRect.width > rect2.x &&
-//                        colliedRect.y < rect2.y + rect2.height &&
-//                        colliedRect.height + colliedRect.y > rect2.y
-//        ) ? this : null;
-//    }
-
     protected void handleAnimate() {
         _animate--;
         if (_animate < -9000) _animate = 9001;
